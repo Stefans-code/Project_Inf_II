@@ -1,0 +1,16 @@
+<script setup>
+import { ref } from 'vue'
+
+const msg = ref('Indovina il paese')
+const isLogged = ref(false)
+
+
+</script>
+
+<template>
+  <h1>indovina il paese</h1>
+  <button v-if="isLogged"> Inizia a giocare </button>
+  <button v-if="!isLogged"> Login e registrazione </button>
+
+
+</template>
