@@ -28,6 +28,7 @@ const handleLogout = () => {
       <button @click="router.push('/game')"> Inizia a Giocare </button><br>
       <button @click="router.push('/profile')"> Il mio Profilo </button><br>
       <button @click="router.push('/leaderboard')"> Classifica Globale </button><br>
+      <button @click="router.push('/about')"> Istruzioni </button><br>
       <button @click="handleLogout" class="btn-logout"> Logout </button>
     </div>
   </div>
