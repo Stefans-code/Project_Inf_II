@@ -1,66 +1,109 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCountryInfo, getCountries } from '../../script.js'
 
 const router = useRouter()
-const state = ref('mode_selection') // mode_selection, difficulty_selection, quiz, game_over
-const mode = ref(0) // 0: Curiosità, 1: Cibo, 2: Europa
+const state = ref('mode_selection') // Stati: selezione modalità, difficoltà, quiz, game_over
+const mode = ref(0)
 const difficulty = ref(0)
 const score = ref(0)
 const maxScore = 5
 
+// Dati del quiz
 const currentFact = ref("")
 const currentAnswer = ref("")
 const options = ref([])
 const isLoading = ref(false)
 
+// Logica del Timer: usiamo una variabile reattiva per aggiornare l'interfaccia in tempo reale.
+const timer = ref(15) 
+let timerInterval = null // Memorizziamo l'intervallo per poterlo fermare quando serve
+
+// Feedback visivo: memorizza l'opzione cliccata per attivare le classi CSS (verde/rosso)
+const selectedOption = ref(null) 
+
+/**
+ * GESTIONE TEMPO: Avvia un intervallo che scala ogni secondo.
+ * Se il tempo arriva a 0, scatta automaticamente la prossima domanda.
+ * È fondamentale fermare l'intervallo precedente con clearInterval per evitare bug.
+ */
+const startTimer = () => {
+  timer.value = 15
+  if (timerInterval) clearInterval(timerInterval)
+  timerInterval = setInterval(() => {
+    timer.value--
+    if (timer.value <= 0) {
+      clearInterval(timerInterval)
+      alert("Tempo scaduto!")
+      startNewRound() 
+    }
+  }, 1000)
+}
+
+// Funzione per selezionare la modalità
 const selectMode = (m) => {
   mode.value = m
   state.value = 'difficulty_selection'
 }
 
+// Funzione per selezionare la difficoltà
 const selectDifficulty = (d) => {
   difficulty.value = d
   startNewRound()
 }
 
+// Avvia una nuova domanda
 const startNewRound = async () => {
+  if (timerInterval) clearInterval(timerInterval)
   state.value = 'quiz'
   isLoading.value = true
+  selectedOption.value = null
   currentFact.value = "Caricamento fatto da Wikipedia..."
   
+  // Prende la lista dei paesi in base alla modalità
   const availableCountries = getCountries(mode.value)
   currentAnswer.value = availableCountries[Math.floor(Math.random() * availableCountries.length)]
   
-  // Chiama l'API con la modalità specifica
+  // Recupera il fatto da Wikipedia
   currentFact.value = await getCountryInfo(currentAnswer.value, mode.value)
   
-  // Genera opzioni
+  // Genera le 4 opzioni di risposta
   let ops = [currentAnswer.value]
   while (ops.length < 4) {
     let c = availableCountries[Math.floor(Math.random() * availableCountries.length)]
     if (!ops.includes(c)) ops.push(c)
   }
   options.value = ops.sort(() => Math.random() - 0.5)
+  
   isLoading.value = false
+  startTimer() // Fa partire il timer solo quando i dati sono pronti
 }
 
+// Controlla se la risposta è corretta
 const checkAnswer = (selected) => {
-  if (selected === currentAnswer.value) {
-    score.value++
-    if (score.value >= maxScore) {
-      state.value = 'game_over'
-      updateHighScore()
+  if (selectedOption.value !== null) return // Impedisce click multipli
+  
+  selectedOption.value = selected
+  clearInterval(timerInterval) // Ferma il timer quando l'utente risponde
+
+  setTimeout(() => {
+    if (selected === currentAnswer.value) {
+      score.value++
+      if (score.value >= maxScore) {
+        state.value = 'game_over'
+        updateHighScore()
+      } else {
+        startNewRound()
+      }
     } else {
+      alert("Sbagliato! Era: " + currentAnswer.value)
       startNewRound()
     }
-  } else {
-    alert("Sbagliato! La risposta corretta era: " + currentAnswer.value)
-    startNewRound()
-  }
+  }, 1000) // Aspetta un secondo per far vedere il colore del feedback
 }
 
+// Salva il punteggio massimo in locale (in attesa di Firebase)
 const updateHighScore = () => {
   const currentHigh = parseInt(localStorage.getItem('highScore') || "0")
   if (score.value > currentHigh) {
@@ -69,8 +112,14 @@ const updateHighScore = () => {
 }
 
 const goHome = () => {
+  if (timerInterval) clearInterval(timerInterval)
   router.push('/')
 }
+
+// Pulisce il timer se l'utente cambia pagina
+onUnmounted(() => {
+  if (timerInterval) clearInterval(timerInterval)
+})
 </script>
 
 <template>
@@ -97,13 +146,28 @@ const goHome = () => {
 
     <!-- QUIZ -->
     <div v-if="state === 'quiz'">
-      <h2> Punteggio: {{ score }} / {{ maxScore }} </h2>
+      <div class="header-info">
+        <span>Punteggio: {{ score }} / {{ maxScore }}</span> | 
+        <span :class="{ 'timer-low': timer <= 5 }">Tempo: {{ timer }}s</span>
+      </div>
+      
       <div class="fact-box">
         <p v-if="isLoading"><em>Recupero dati...</em></p>
         <p v-else>{{ currentFact }}</p>
       </div>
-      <div v-if="!isLoading">
-        <button v-for="opt in options" :key="opt" @click="checkAnswer(opt)"> {{ opt }} </button>
+
+      <div v-if="!isLoading" class="options-container">
+        <button 
+          v-for="opt in options" 
+          :key="opt" 
+          @click="checkAnswer(opt)"
+          :class="{
+            'correct': selectedOption === opt && opt === currentAnswer.value,
+            'wrong': selectedOption === opt && opt !== currentAnswer.value
+          }"
+        > 
+          {{ opt }} 
+        </button>
       </div>
       <br>
       <button @click="goHome"> Esci </button>
@@ -124,16 +188,44 @@ const goHome = () => {
   text-align: center;
   padding: 20px;
 }
+.header-info {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.timer-low {
+  color: red;
+  animation: blink 1s infinite;
+}
+@keyframes blink {
+  50% { opacity: 0.5; }
+}
 .fact-box {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
-  padding: 15px;
+  background: #f0f0f0;
+  border: 2px solid #ccc;
+  padding: 20px;
   margin: 20px auto;
-  max-width: 500px;
-  min-height: 100px;
+  max-width: 600px;
+  min-height: 120px;
+  border-radius: 10px;
+}
+.options-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 button {
-  margin: 5px;
-  padding: 8px 15px;
+  padding: 10px;
+  cursor: pointer;
+}
+/* Stili per il feedback visivo */
+.correct {
+  background-color: #4CAF50 !important;
+  color: white;
+}
+.wrong {
+  background-color: #f44336 !important;
+  color: white;
 }
 </style>
