@@ -1,57 +1,76 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { auth } from '../firebase'
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth'
+import { db } from '../firebase'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
 
 const router = useRouter()
-const isLogged = ref(false)
-const userEmail = ref("")
+const isLogged = ref(localStorage.getItem('userLogged') === 'true')
+const username = ref(localStorage.getItem('username') || "")
 const password = ref("")
 
-// Controlla se l'utente è già loggato all'avvio
-onMounted(() => {
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      isLogged.value = true
-      userEmail.value = user.email
-    } else {
-      isLogged.value = false
-    }
-  })
-})
-
 /** 
- * Funzione di Login tramite Firebase
+ * LOGIN MANUALE TRAMITE FIRESTORE (Solo Username)
  */
 const handleLogin = async () => {
+  if (!username.value || !password.value) return alert("Inserisci i dati!")
+  
   try {
-    await signInWithEmailAndPassword(auth, userEmail.value, password.value)
-    alert("Login effettuato con successo!")
-  } catch (error) {
-    if (error.code === 'auth/user-not-found') {
-      alert("Utente non trovato. Clicca su Registrati per creare un account.")
+    const userRef = doc(db, "utenti", username.value)
+    const docSnap = await getDoc(userRef)
+
+    if (docSnap.exists()) {
+      if (docSnap.data().password === password.value) {
+        // Login riuscito
+        localStorage.setItem('userLogged', 'true')
+        localStorage.setItem('username', username.value)
+        isLogged.value = true
+        alert("Bentornato " + username.value + "!")
+      } else {
+        alert("Password errata!")
+      }
     } else {
-      alert("Errore: " + error.message)
+      alert("Username non trovato. Registrati!")
     }
+  } catch (error) {
+    alert("Errore: " + error.message)
   }
 }
 
 /** 
- * Funzione di Registrazione tramite Firebase
+ * REGISTRAZIONE MANUALE TRAMITE FIRESTORE
  */
 const handleRegister = async () => {
+  if (!username.value || !password.value) return alert("Inserisci i dati!")
+  if (username.value.length < 3) return alert("Username troppo corto!")
+
   try {
-    await createUserWithEmailAndPassword(auth, userEmail.value, password.value)
-    alert("Account creato con successo!")
+    const userRef = doc(db, "utenti", username.value)
+    const docSnap = await getDoc(userRef)
+
+    if (docSnap.exists()) {
+      alert("Username già esistente, scegline un altro.")
+    } else {
+      // Crea il nuovo utente nel database
+      await setDoc(userRef, {
+        password: password.value,
+        highScore: 0,
+        createdAt: new Date()
+      })
+      localStorage.setItem('userLogged', 'true')
+      localStorage.setItem('username', username.value)
+      isLogged.value = true
+      alert("Account creato! Benvenuto " + username.value)
+    }
   } catch (error) {
     alert("Errore registrazione: " + error.message)
   }
 }
 
-const handleLogout = async () => {
-  await signOut(auth)
-  alert("Logout effettuato.")
+const handleLogout = () => {
+  localStorage.removeItem('userLogged')
+  localStorage.removeItem('username')
+  isLogged.value = false
 }
 
 const startGame = () => router.push('/game')
@@ -60,48 +79,40 @@ const goProfile = () => router.push('/profile')
 
 <template>
   <div class="view-container">
-    <h1> GeoQuiz - Firebase Edition </h1>
+    <h1> GeoQuiz 🌍 </h1>
     
     <div v-if="!isLogged">
-      <h2> Accedi o Registrati </h2>
-      <label> Email </label>
-      <input type="email" v-model="userEmail" placeholder="esempio@email.com" />
+      <h2> Login Giocatore </h2>
+      <label> Username </label>
+      <input type="text" v-model="username" placeholder="Inserisci username" />
       <br>
       <label> Password </label>
-      <input type="password" v-model="password" placeholder="Minimo 6 caratteri" />
+      <input type="password" v-model="password" placeholder="Inserisci password" />
       <br>
-      <button @click="handleLogin"> Accedi </button>
-      <button @click="handleRegister"> Registrati </button>
+      <div class="auth-buttons">
+        <button @click="handleLogin"> Accedi </button>
+        <button @click="handleRegister"> Registrati </button>
+      </div>
     </div>
 
     <div v-else>
-      <p>Sessione attiva: <strong>{{ userEmail }}</strong></p>
+      <p>Giocatore: <strong>{{ username }}</strong></p>
       <div class="menu-buttons">
         <button @click="startGame"> Inizia Partita </button><br>
         <button @click="goProfile"> Il mio Profilo </button><br>
-        <button @click="router.push('/leaderboard')"> Classifica Globale </button><br>
-        <button @click="router.push('/about')"> Istruzioni di gioco </button><br>
-        <button @click="handleLogout" class="btn-logout"> Esci dall'account </button>
+        <button @click="router.push('/leaderboard')"> Classifica </button><br>
+        <button @click="router.push('/about')"> Istruzioni </button><br>
+        <button @click="handleLogout" class="btn-logout"> Logout </button>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.view-container {
-  text-align: center;
-}
-.menu-buttons button {
-  width: 200px;
-  margin: 8px;
-  padding: 12px;
-}
-.btn-logout {
-  margin-top: 30px !important;
-  background-color: #eee;
-}
-button {
-  margin: 5px;
-  padding: 10px 15px;
-}
+.view-container { text-align: center; }
+.auth-buttons { margin-top: 15px; }
+.menu-buttons button { width: 200px; margin: 8px; padding: 12px; }
+.btn-logout { margin-top: 20px !important; background-color: #eee; }
+button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+input { padding: 8px; margin: 5px; }
 </style>

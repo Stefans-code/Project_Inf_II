@@ -6,23 +6,18 @@ import { doc, getDoc } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 
 const router = useRouter()
-const userEmail = ref("Caricamento...")
+const username = ref(localStorage.getItem('username') || "Ospite")
 const highScore = ref(0)
 
-onMounted(() => {
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      userEmail.value = user.email
-      // Recupera il punteggio da Firestore
-      const userRef = doc(db, "scores", user.uid)
-      const docSnap = await getDoc(userRef)
-      if (docSnap.exists()) {
-        highScore.value = docSnap.data().highScore || 0
-      }
-    } else {
-      router.push('/') // Torna alla home se non loggato
+onMounted(async () => {
+  if (username.value !== "Ospite") {
+    // Recupera i dati dal documento dell'utente basato sull'Username
+    const userRef = doc(db, "utenti", username.value)
+    const docSnap = await getDoc(userRef)
+    if (docSnap.exists()) {
+      highScore.value = docSnap.data().highScore || 0
     }
-  })
+  }
 })
 
 const goHome = () => router.push('/')
