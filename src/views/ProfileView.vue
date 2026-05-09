@@ -1,49 +1,44 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { auth, db } from '../firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
 
 const router = useRouter()
-// Recupera i dati dal database locale del browser
-const username = ref(localStorage.getItem('username') || "Ospite")
-const highScore = ref(localStorage.getItem('highScore') || "0")
+const userEmail = ref("Caricamento...")
+const highScore = ref(0)
 
-const goHome = () => {
-  router.push('/')
-}
+onMounted(() => {
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      userEmail.value = user.email
+      // Recupera il punteggio da Firestore
+      const userRef = doc(db, "scores", user.uid)
+      const docSnap = await getDoc(userRef)
+      if (docSnap.exists()) {
+        highScore.value = docSnap.data().highScore || 0
+      }
+    } else {
+      router.push('/') // Torna alla home se non loggato
+    }
+  })
+})
 
-// Funzione per resettare i progressi
-const clearData = () => {
-  if (confirm("Vuoi davvero cancellare i tuoi record?")) {
-    localStorage.removeItem('highScore')
-    highScore.value = "0"
-  }
-}
+const goHome = () => router.push('/')
 </script>
 
 <template>
   <div class="view-container">
-    <h1> Profilo Giocatore </h1>
-    <p><strong>Nome Utente:</strong> {{ username }}</p>
-    <p><strong>Record Personale:</strong> {{ highScore }} punti</p>
+    <h1> Profilo Giocatore (Cloud) </h1>
+    <p><strong>Email:</strong> {{ userEmail }}</p>
+    <p><strong>Record su Firebase:</strong> {{ highScore }} punti</p>
     
-    <div class="profile-actions">
-      <button @click="goHome"> Torna al Menu </button>
-      <button @click="clearData" class="btn-danger"> Reset Record </button>
-    </div>
+    <button @click="goHome"> Torna al Menu </button>
   </div>
 </template>
 
 <style scoped>
-.view-container {
-  text-align: center;
-  padding: 20px;
-}
-.btn-danger {
-  color: #c00;
-  margin-top: 20px;
-}
-button {
-  margin: 10px;
-  padding: 10px 20px;
-}
+.view-container { text-align: center; padding: 20px; }
+button { margin: 10px; padding: 10px 20px; }
 </style>

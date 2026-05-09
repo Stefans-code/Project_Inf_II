@@ -5,7 +5,19 @@ Questa documentazione è stata scritta per spiegare nel dettaglio ogni parte del
 ---
 
 ## 1. Architettura del Progetto
-Il progetto utilizza **Vue 3** con la **Composition API** (lo standard moderno di Vue). 
+## Tecnologie Usate
+-   **Frontend**: Vue.js 3 (Composition API)
+-   **Routing**: Vue Router 4
+-   **API Esterna**: Wikipedia REST API
+-   **Backend (Database & Auth)**: **Firebase (Google Cloud)**
+-   **Styling**: CSS standard
+
+## Dettaglio Firebase
+Il progetto utilizza Firebase per rendere l'esperienza utente persistente e multi-giocatore:
+1.  **Authentication**: Gestisce il login e la registrazione degli utenti tramite Email e Password. I dati sono protetti e gestiti dai server di Google.
+2.  **Firestore**: Un database NoSQL usato per memorizzare i record (High Scores). Ogni utente ha un documento associato al proprio UID univoco.
+3.  **Cloud Sync**: I punteggi sono salvati online, quindi se l'utente cambia browser o dispositivo, ritroverà i suoi progressi.
+
 - **Vite**: Usato come build tool per la sua velocità.
 - **Vue Router**: Gestisce la navigazione tra le 5 pagine (Home, Gioco, Profilo, Classifica, Istruzioni) senza ricaricare il browser (Single Page Application).
 
