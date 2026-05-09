@@ -1,4 +1,3 @@
-
 //start test area
  // getCountryInfo("italy").finally(it => {
  //     // is undefined for unknown reasons
@@ -10,19 +9,18 @@
 
 
 // needs database
-function getCountryBlacklist(/** @type string */ name) {
+export function getCountryBlacklist(/** @type string */ name) {
     return [name, "italian"]
 }
 
 /** @returns string */
-async function getCountryInfo(/** @type string */ countryName) {
-  await getData(countryName).then(response => {
-    if (response.error != -1) return response.error.toString
-    else return sanitizeString(response.fact, getCountryBlacklist(countryName)) 
-  })
+export async function getCountryInfo(/** @type string */ countryName) {
+  const response = await getData(countryName)
+  if (response.error != -1) return "Errore nel caricamento"
+  else return sanitizeString(response.fact, getCountryBlacklist(countryName)) 
 }
 
-async function getData(/** @type string */ countryName) {
+export async function getData(/** @type string */ countryName) {
   let data = {
     error: -1,
     response: []
@@ -43,19 +41,17 @@ async function getData(/** @type string */ countryName) {
 
   let toReturn = {
     error: data.error,
-    fact: data.response.pages[0].excerpt
+    fact: (data.response.pages && data.response.pages.length > 0) ? data.response.pages[0].excerpt : "Nessuna informazione trovata"
   }
   return toReturn  
 }
 
-function getURL(/** @type string */ countryName) {
+export function getURL(/** @type string */ countryName) {
   return `https://en.wikipedia.org/w/rest.php/v1/search/page?q=${countryName}&limit=1`;
 }
 
-
-
 /** @returns string */
-function sanitizeString(/** @type string */ stringToClear, /** @type Array */ keyWordBlacklist) {
+export function sanitizeString(/** @type string */ stringToClear, /** @type Array */ keyWordBlacklist) {
   stringToClear = trimTags(stringToClear)
   stringToClear = censoreName(stringToClear, keyWordBlacklist)
   return stringToClear
@@ -65,33 +61,30 @@ function sanitizeString(/** @type string */ stringToClear, /** @type Array */ ke
   since wikimedia api are weird, the excerpt containg the <span> tags, so here we remove them
   @returns string
  */
-function trimTags( /** @type string*/str) {
+export function trimTags( /** @type string*/str) {
+  if (!str) return ""
   while (str.includes("<") && str.includes(">")) { // continue untile there are no more tags left
     let part1 = str.substring(0, str.indexOf("<")) //gets the part of string before the <
-    let part2 = str.substring(str.indexOf(">") + 1, str.length -1) //gets the part of string after the >
+    let part2 = str.substring(str.indexOf(">") + 1, str.length) //gets the part of string after the >
     str = part1 + part2 // merge them, replacing the original string, thus removing everyithing between < and >
   }
-  return str // the original string gets modified, but gets returned anyway because it's  handy
+  return str
 }
 
 /** replaces al the values of `name` in `value` with *** */
-function censoreName(/** @type string*/ value, /** @type Array*/ name) {
-  for (n of name) {
-    // weird regex spells were needed because Javascript is Javascript and needed to rembember why I hate it
+export function censoreName(/** @type string*/ value, /** @type Array*/ name) {
+  if (!value) return ""
+  for (let n of name) {
     value = value.replace(new RegExp(n, "gi"), "***")
   }
   return value
 }
 
+export function print(...value){
+  console.log(...value)
+}
 
-function print(...value){
-  console.log(value)
-}
-function print(value){
-  console.log(value)
-}
-function printAndReturn(value){
+export function printAndReturn(value){
   console.log(value)
   return value
 }
-
