@@ -2,32 +2,24 @@
 import { ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCountryInfo, getCountries } from '../../script.js'
+import { db } from '../firebase'
+import { doc, updateDoc, getDoc } from 'firebase/firestore'
 
 const router = useRouter()
-const state = ref('mode_selection') // Stati: selezione modalità, difficoltà, quiz, game_over
+const state = ref('mode_selection')
 const mode = ref(0)
 const difficulty = ref(0)
 const score = ref(0)
 const maxScore = 5
 
-// Dati del quiz
 const currentFact = ref("")
 const currentAnswer = ref("")
 const options = ref([])
 const isLoading = ref(false)
+const timer = ref(15)
+let timerInterval = null
+const selectedOption = ref(null)
 
-// Logica del Timer: usiamo una variabile reattiva per aggiornare l'interfaccia in tempo reale.
-const timer = ref(15) 
-let timerInterval = null // Memorizziamo l'intervallo per poterlo fermare quando serve
-
-// Feedback visivo: memorizza l'opzione cliccata per attivare le classi CSS (verde/rosso)
-const selectedOption = ref(null) 
-
-/**
- * GESTIONE TEMPO: Avvia un intervallo che scala ogni secondo.
- * Se il tempo arriva a 0, scatta automaticamente la prossima domanda.
- * È fondamentale fermare l'intervallo precedente con clearInterval per evitare bug.
- */
 const startTimer = () => {
   timer.value = 15
   if (timerInterval) clearInterval(timerInterval)
@@ -41,19 +33,16 @@ const startTimer = () => {
   }, 1000)
 }
 
-// Funzione per selezionare la modalità
 const selectMode = (m) => {
   mode.value = m
   state.value = 'difficulty_selection'
 }
 
-// Funzione per selezionare la difficoltà
 const selectDifficulty = (d) => {
   difficulty.value = d
   startNewRound()
 }
 
-// Avvia una nuova domanda
 const startNewRound = async () => {
   if (timerInterval) clearInterval(timerInterval)
   state.value = 'quiz'
@@ -61,14 +50,10 @@ const startNewRound = async () => {
   selectedOption.value = null
   currentFact.value = "Caricamento fatto da Wikipedia..."
   
-  // Prende la lista dei paesi in base alla modalità
   const availableCountries = getCountries(mode.value)
   currentAnswer.value = availableCountries[Math.floor(Math.random() * availableCountries.length)]
-  
-  // Recupera il fatto da Wikipedia
   currentFact.value = await getCountryInfo(currentAnswer.value, mode.value)
   
-  // Genera le 4 opzioni di risposta
   let ops = [currentAnswer.value]
   while (ops.length < 4) {
     let c = availableCountries[Math.floor(Math.random() * availableCountries.length)]
@@ -77,22 +62,21 @@ const startNewRound = async () => {
   options.value = ops.sort(() => Math.random() - 0.5)
   
   isLoading.value = false
-  startTimer() // Fa partire il timer solo quando i dati sono pronti
+  startTimer()
 }
 
-// Controlla se la risposta è corretta
 const checkAnswer = (selected) => {
-  if (selectedOption.value !== null) return // Impedisce click multipli
+  if (selectedOption.value !== null) return 
   
   selectedOption.value = selected
-  clearInterval(timerInterval) // Ferma il timer quando l'utente risponde
+  clearInterval(timerInterval)
 
   setTimeout(() => {
     if (selected === currentAnswer.value) {
       score.value++
       if (score.value >= maxScore) {
         state.value = 'game_over'
-        updateHighScore()
+        updateHighScore() // Salvataggio su Firestore tramite Username
       } else {
         startNewRound()
       }
@@ -100,14 +84,34 @@ const checkAnswer = (selected) => {
       alert("Sbagliato! Era: " + currentAnswer.value)
       startNewRound()
     }
-  }, 1000) // Aspetta un secondo per far vedere il colore del feedback
+  }, 1000)
 }
 
-// Salva il punteggio massimo in locale (in attesa di Firebase)
-const updateHighScore = () => {
-  const currentHigh = parseInt(localStorage.getItem('highScore') || "0")
-  if (score.value > currentHigh) {
-    localStorage.setItem('highScore', score.value.toString())
+/** 
+ * SALVATAGGIO CLOUD: Salva il record nel documento dell'utente usando l'Username
+ */
+const updateHighScore = async () => {
+  const currentUsername = localStorage.getItem('username')
+  if (currentUsername) {
+    try {
+      const userRef = doc(db, "utenti", currentUsername)
+      const docSnap = await getDoc(userRef)
+      
+      let currentHigh = 0
+      if (docSnap.exists()) {
+        currentHigh = docSnap.data().highScore || 0
+      }
+
+      if (score.value > currentHigh) {
+        await updateDoc(userRef, {
+          highScore: score.value,
+          updatedAt: new Date()
+        })
+        console.log("Punteggio aggiornato nel cloud!")
+      }
+    } catch (e) {
+      console.error("Errore salvataggio:", e)
+    }
   }
 }
 
@@ -116,7 +120,6 @@ const goHome = () => {
   router.push('/')
 }
 
-// Pulisce il timer se l'utente cambia pagina
 onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
 })
@@ -124,47 +127,37 @@ onUnmounted(() => {
 
 <template>
   <div class="game-container">
-    <!-- SELEZIONE MODALITÀ -->
     <div v-if="state === 'mode_selection'">
       <h1> Modalità di gioco</h1>
-      <p> Seleziona la sfida </p>
       <button @click="selectMode(0)"> Curiosità del mondo </button><br>
       <button @click="selectMode(1)"> Cibo e tradizioni </button><br>
       <button @click="selectMode(2)"> Solo Europa </button><br>
       <button @click="goHome"> Indietro </button>
     </div>
 
-    <!-- SELEZIONE DIFFICOLTÀ -->
     <div v-if="state === 'difficulty_selection'">
       <h1> Difficoltà </h1>
-      <p> Scegli quanto vuoi sfidarti </p>
       <button @click="selectDifficulty(0)"> Facile </button><br>
       <button @click="selectDifficulty(1)"> Media </button><br>
       <button @click="selectDifficulty(2)"> Difficile </button><br>
       <button @click="state = 'mode_selection'"> Indietro </button>
     </div>
 
-    <!-- QUIZ -->
     <div v-if="state === 'quiz'">
       <div class="header-info">
         <span>Punteggio: {{ score }} / {{ maxScore }}</span> | 
-        <span :class="{ 'timer-low': timer <= 5 }">Tempo: {{ timer }}s</span>
+        <span>Tempo: {{ timer }}s</span>
       </div>
-      
       <div class="fact-box">
         <p v-if="isLoading"><em>Recupero dati...</em></p>
         <p v-else>{{ currentFact }}</p>
       </div>
-
       <div v-if="!isLoading" class="options-container">
         <button 
           v-for="opt in options" 
           :key="opt" 
           @click="checkAnswer(opt)"
-          :class="{
-            'correct': selectedOption === opt && opt === currentAnswer.value,
-            'wrong': selectedOption === opt && opt !== currentAnswer.value
-          }"
+          :class="{ 'correct': selectedOption === opt && opt === currentAnswer.value, 'wrong': selectedOption === opt && opt !== currentAnswer.value }"
         > 
           {{ opt }} 
         </button>
@@ -173,59 +166,19 @@ onUnmounted(() => {
       <button @click="goHome"> Esci </button>
     </div>
 
-    <!-- GAME OVER -->
     <div v-if="state === 'game_over'">
       <h1> Partita Finita! </h1>
-      <p> Hai totalizzato {{ score }} punti su {{ maxScore }} </p>
+      <p> Hai totalizzato {{ score }} punti! </p>
       <button @click="goHome"> Torna al menu </button>
-      <button @click="state = 'mode_selection'; score = 0"> Gioca ancora </button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.game-container {
-  text-align: center;
-  padding: 20px;
-}
-.header-info {
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-.timer-low {
-  color: red;
-  animation: blink 1s infinite;
-}
-@keyframes blink {
-  50% { opacity: 0.5; }
-}
-.fact-box {
-  background: #f0f0f0;
-  border: 2px solid #ccc;
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 600px;
-  min-height: 120px;
-  border-radius: 10px;
-}
-.options-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  max-width: 400px;
-  margin: 0 auto;
-}
-button {
-  padding: 10px;
-  cursor: pointer;
-}
-/* Stili per il feedback visivo */
-.correct {
-  background-color: #4CAF50 !important;
-  color: white;
-}
-.wrong {
-  background-color: #f44336 !important;
-  color: white;
-}
+.game-container { text-align: center; padding: 20px; }
+.fact-box { background: #f0f0f0; border: 1px solid #ccc; padding: 20px; margin: 20px auto; max-width: 600px; border-radius: 10px; }
+.options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 400px; margin: 0 auto; }
+button { padding: 10px; cursor: pointer; }
+.correct { background-color: #4CAF50 !important; color: white; }
+.wrong { background-color: #f44336 !important; color: white; }
 </style>

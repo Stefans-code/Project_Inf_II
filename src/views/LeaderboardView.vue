@@ -1,44 +1,53 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { db } from '../firebase'
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
 
 const router = useRouter()
 const highScores = ref([])
+const isLoading = ref(true)
 
-onMounted(() => {
-  // Simuliamo una classifica recuperando i dati locali o mettendone di prova
-  const localScore = localStorage.getItem('highScore') || "0"
-  const username = localStorage.getItem('username') || "Tu"
-  
-  highScores.value = [
-    { name: username, score: parseInt(localScore) },
-    { name: "Marco", score: 4 },
-    { name: "Sofia", score: 3 },
-    { name: "Luca", score: 2 }
-  ].sort((a, b) => b.score - a.score)
+onMounted(async () => {
+  try {
+    // Recupera la classifica dalla cartella 'utenti', ordinando per highScore
+    const q = query(collection(db, "utenti"), orderBy("highScore", "desc"), limit(10))
+    const querySnapshot = await getDocs(q)
+    const scores = []
+    querySnapshot.forEach((doc) => {
+      // L'ID del documento è proprio l'username scelto dall'utente
+      scores.push({ username: doc.id, ...doc.data() })
+    })
+    highScores.value = scores
+  } catch (error) {
+    console.error("Errore classifica:", error)
+  } finally {
+    isLoading.value = false
+  }
 })
 
-const goHome = () => {
-  router.push('/')
-}
+const goHome = () => router.push('/')
 </script>
 
 <template>
   <div class="view-container">
-    <h1> Classifica Globale </h1>
-    <table align="center" border="1" cellpadding="10" style="border-collapse: collapse; width: 80%; max-width: 400px;">
+    <h1> Classifica Giocatori 🏆 </h1>
+    
+    <div v-if="isLoading">Caricamento classifica...</div>
+    
+    <table v-else align="center" border="1" cellpadding="10" style="border-collapse: collapse; width: 80%; max-width: 500px;">
       <thead>
         <tr>
-          <th>Posizione</th>
+          <th>Pos.</th>
           <th>Giocatore</th>
-          <th>Punteggio</th>
+          <th>Record</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(entry, index) in highScores" :key="index">
+        <tr v-for="(entry, index) in highScores" :key="entry.username">
           <td>{{ index + 1 }}</td>
-          <td>{{ entry.name }}</td>
-          <td>{{ entry.score }}</td>
+          <td>{{ entry.username }}</td>
+          <td>{{ entry.highScore }}</td>
         </tr>
       </tbody>
     </table>
@@ -48,12 +57,6 @@ const goHome = () => {
 </template>
 
 <style scoped>
-.view-container {
-  text-align: center;
-  padding: 20px;
-}
-button {
-  margin: 10px;
-  padding: 10px 20px;
-}
+.view-container { text-align: center; padding: 20px; }
+button { margin: 10px; padding: 10px 20px; }
 </style>

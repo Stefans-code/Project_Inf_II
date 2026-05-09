@@ -3,15 +3,15 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// La configurazione del tuo progetto Firebase
-// DEVI SOSTITUIRE QUESTI DATI con quelli che trovi nella console di Firebase!
+// La configurazione del tuo progetto Firebase (Recuperata dallo screenshot)
 const firebaseConfig = {
-  apiKey: "IL_TUO_API_KEY",
-  authDomain: "IL_TUO_AUTH_DOMAIN",
-  projectId: "IL_TUO_PROJECT_ID",
-  storageBucket: "IL_TUO_STORAGE_BUCKET",
-  messagingSenderId: "IL_TUO_MESSAGING_SENDER_ID",
-  appId: "IL_TUO_APP_ID"
+  apiKey: "AIzaSyB7uobcwkddALN0mK4ByQKBWyLM8DCoILI",
+  authDomain: "geoquiz-progetto.firebaseapp.com",
+  projectId: "geoquiz-progetto",
+  storageBucket: "geoquiz-progetto.firebasestorage.app",
+  messagingSenderId: "625641051864",
+  appId: "1:625641051864:web:c866cae365d996fc74e9ad",
+  measurementId: "G-75HK96256V"
 };
 
 // Inizializza Firebase
