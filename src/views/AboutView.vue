@@ -8,36 +8,89 @@ const goHome = () => {
 </script>
 
 <template>
-  <div class="view-container">
-    <h1> Info about the game </h1>
-    <div class="info-text">
-      <p><strong>GeoQuiz</strong> is an educational project to challenge your geographical knowledge.</p>
-      <h2> How to play: </h2>
-      <ul style="text-align: left; display: inline-block;">
-        <li>Select a gamemode between the 3 options.</li>
-        <li>Read the fact or curiosity took from Wikipedia.</li>
-        <li>Guess about what country is between the 4 options.</li>
-        <li>Try to obtain the maximum score (5 points)!</li>
+  <div class="view-container md-card about-view">
+    <h1>About GeoQuiz</h1>
+    
+    <div class="info-content">
+      <p class="intro">GeoQuiz is an educational platform designed to challenge and expand your geographical knowledge through interactive trivia.</p>
+      
+      <h2>How to Play</h2>
+      <ul class="md-list">
+        <li>
+          <span class="icon">🎯</span>
+          <span>Select one of the 3 available game modes.</span>
+        </li>
+        <li>
+          <span class="icon">📖</span>
+          <span>Read the fact or curiosity sourced from Wikipedia.</span>
+        </li>
+        <li>
+          <span class="icon">🔍</span>
+          <span>Identify the correct country from the 4 options provided.</span>
+        </li>
+        <li>
+          <span class="icon">⭐</span>
+          <span>Reach the maximum score of 5 points to win!</span>
+        </li>
       </ul>
-      <p><em>Developed for the course of Informatic II.</em></p>
+      
+      <p class="credits">Developed for the <strong>Informatic II</strong> course.</p>
     </div>
-    <br>
-    <button @click="goHome"> Back to the Menu </button>
+    
+    <button @click="goHome" class="btn-filled">Back to Menu</button>
   </div>
 </template>
 
 <style scoped>
-.view-container {
+.about-view {
+  max-width: 550px;
+}
+
+.info-content {
+  text-align: left;
+  margin-bottom: 32px;
+}
+
+.intro {
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--md-sys-color-primary);
+  margin-bottom: 16px;
+}
+
+.md-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.md-list li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background-color: var(--md-sys-color-surface);
+  border-radius: 12px;
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+.md-list .icon {
+  font-size: 1.5rem;
+}
+
+.credits {
+  font-size: 0.875rem;
+  color: var(--md-sys-color-secondary);
+  border-top: 1px solid var(--md-sys-color-outline);
+  padding-top: 16px;
   text-align: center;
-  padding: 20px;
-}
-.info-text {
-  max-width: 500px;
-  margin: 0 auto;
-  line-height: 1.6;
-}
-button {
-  margin: 10px;
-  padding: 10px 20px;
 }
 </style>
