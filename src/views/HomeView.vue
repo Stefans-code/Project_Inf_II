@@ -27,7 +27,7 @@ const handleLogout = () => {
     <div class="menu-buttons">
       <button @click="router.push('/game')">🚀 Play </button><br>
       <button @click="router.push('/profile')">👤 My profile </button><br>
-      <button @click="router.push('/leaderboard')">🏆 Global scoreboard </button><br>
+      <button @click="router.push('/leaderboard')">🏆 Global leaderboard </button><br>
       <button @click="router.push('/about')">📖 Istructions </button><br>
       <button @click="handleLogout" class="btn-logout">🚪 Logout </button>
     </div>
