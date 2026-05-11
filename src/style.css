@@ -1,6 +1,92 @@
 /* File svuotato per mantenere la grafica basica come richiesto */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root {
+  --primary-color: #3498db;       /* Blu brillante (per le domande) */
+  --secondary-color: #2c3e50;     /* Blu notte (per navbar e titoli) */
+  --accent-color: #f1c40f;        /* Giallo oro (per evidenziare curiosità e punti) */
+  
+  --bg-color: #245289;            /* Grigio caldissimo quasi bianco */
+  --card-bg: #ffffff;             /* Bianco puro per i quiz */
+  --text-color: #2c3e50;
+  
+  --success: #2ecc71;             /* Verde per risposta corretta */
+  --error: #e74c3c;               /* Rosso per risposta sbagliata */
+  --main-font: 'Poppins', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+
+#app-wrapper {
+  /* Questo è il div di Vue, deve riempire tutto il body */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 body {
   margin: 0;
   padding: 20px;
-  font-family: sans-serif;
+  font-family: var(--main-font);
+  background-color: var(--bg-color); 
+  color: var(--text-color);
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  
 }
+
+/* Classe base per TUTTI i bottoni */
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  font-family: var(--main-font);
+  font-weight: 600;
+  border-radius: 30px; /* Molto arrotondati, stile moderno/quiz */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease; /* Animazione fluida */
+  text-align: center;
+  font-size: 1rem;
+}
+
+
+button {
+  padding: 12px 24px;
+  font-family: var(--main-font);
+  font-weight: 600;
+  font-size: 1rem;
+  
+  border-radius: 30px; 
+  border: 2px solid var(--primary-color); /* Bordo colorato */
+  background-color: var(--card-bg);      /* Sfondo neutro */
+  color: var(--primary-color);           /* Testo colorato */
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+
+  text-transform: uppercase; /* Tutto maiuscolo */
+  letter-spacing: 1px;       /* Lettere leggermente distanziate */
+}
+
+/* Effetto quando ci passi sopra col mouse */
+button:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+/* Effetto quando lo clicchi */
+button:active {
+  transform: translateY(0);
+}
+
