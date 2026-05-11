@@ -1,92 +1,154 @@
-/* File svuotato per mantenere la grafica basica come richiesto */
-
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 :root {
-  --primary-color: #3498db;       /* Blu brillante (per le domande) */
-  --secondary-color: #2c3e50;     /* Blu notte (per navbar e titoli) */
-  --accent-color: #f1c40f;        /* Giallo oro (per evidenziare curiosità e punti) */
+  /* High Contrast Material Design 3 Color Tokens */
+  --md-sys-color-primary: #1a237e;       /* Deep Indigo for main actions */
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #e8eaf6;
+  --md-sys-color-on-primary-container: #1a237e;
   
-  --bg-color: #245289;            /* Grigio caldissimo quasi bianco */
-  --card-bg: #ffffff;             /* Bianco puro per i quiz */
-  --text-color: #2c3e50;
+  --md-sys-color-secondary: #37474f;     /* Much darker Blue Grey for secondary text */
+  --md-sys-color-on-secondary: #FFFFFF;
   
-  --success: #2ecc71;             /* Verde per risposta corretta */
-  --error: #e74c3c;               /* Rosso per risposta sbagliata */
-  --main-font: 'Poppins', sans-serif;
+  --md-sys-color-surface: #ffffff;
+  --md-sys-color-on-surface: #212121;    /* Almost black for main text */
+  --md-sys-color-surface-container: #ffffff;
+  
+  --md-sys-color-outline: #455a64;       /* Darker outlines */
+  --md-sys-color-error: #d32f2f;
+
+  /* Elevation Shadows */
+  --elevation-1: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  --elevation-2: 0px 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+* {
+  box-sizing: border-box;
 }
 
-
-#app-wrapper {
-  /* Questo è il div di Vue, deve riempire tutto il body */
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
 body {
   margin: 0;
-  padding: 20px;
-  font-family: var(--main-font);
-  background-color: var(--bg-color); 
-  color: var(--text-color);
-
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background: url('./assets/bg.png') no-repeat center center fixed;
+  background-size: cover;
+  color: var(--md-sys-color-on-surface);
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-
-  
+  justify-content: center;
+  align-items: center;
 }
 
-/* Classe base per TUTTI i bottoni */
-.btn {
-  display: inline-block;
-  padding: 12px 24px;
-  font-family: var(--main-font);
-  font-weight: 600;
-  border-radius: 30px; /* Molto arrotondati, stile moderno/quiz */
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease; /* Animazione fluida */
-  text-align: center;
-  font-size: 1rem;
+#app {
+  width: 100%;
+  max-width: 800px; /* Increased from 600px */
+  padding: 24px;
+  display: flex;
+  justify-content: center;
 }
 
+.md-card {
+  background-color: rgba(255, 255, 255, 0.98);
+  border-radius: 32px;
+  padding: 48px; /* Increased padding */
+  box-shadow: var(--elevation-2);
+  border: 1px solid rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 550px; /* Balanced width */
+  min-width: 450px; /* Prevent it from being too skinny */
+}
 
+h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--md-sys-color-primary);
+}
+
+p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #263238; /* Very dark slate for readability */
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+
+/* Material Buttons */
 button {
-  padding: 12px 24px;
-  font-family: var(--main-font);
-  font-weight: 600;
+  height: 48px; /* Slightly taller for better touch target */
+  padding: 0 24px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
   font-size: 1rem;
-  
-  border-radius: 30px; 
-  border: 2px solid var(--primary-color); /* Bordo colorato */
-  background-color: var(--card-bg);      /* Sfondo neutro */
-  color: var(--primary-color);           /* Testo colorato */
-  
+  letter-spacing: 0.5px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   transition: all 0.2s ease;
-  outline: none;
-
-  text-transform: uppercase; /* Tutto maiuscolo */
-  letter-spacing: 1px;       /* Lettere leggermente distanziate */
+  margin: 12px 0;
+  width: 100%;
+  text-transform: none; /* Avoid all caps for a more natural feel */
 }
 
-/* Effetto quando ci passi sopra col mouse */
-button:hover {
-  background-color: var(--primary-color);
-  color: white;
+.btn-filled {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.btn-filled:hover {
+  background-color: #283593;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.3);
 }
 
-/* Effetto quando lo clicchi */
-button:active {
-  transform: translateY(0);
+.btn-tonal {
+  background-color: #f5f5f5;
+  color: #1a237e;
+  border: 1px solid #e0e0e0;
+}
+
+.btn-tonal:hover {
+  background-color: #eeeeee;
+  border-color: #bdbdbd;
+}
+
+.btn-outlined {
+  background-color: transparent;
+  border: 2px solid var(--md-sys-color-primary);
+  color: var(--md-sys-color-primary);
+}
+
+.btn-outlined:hover {
+  background-color: rgba(26, 35, 126, 0.05);
+}
+
+/* Material Inputs */
+.md-field {
+  margin-bottom: 16px;
+}
+
+input {
+  width: 100%;
+  height: 56px;
+  padding: 8px 16px;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: transparent;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border: 2px solid var(--md-sys-color-primary);
+}
+
+/* Navigation & Layout */
+.view-container {
+  width: 100%;
 }
 

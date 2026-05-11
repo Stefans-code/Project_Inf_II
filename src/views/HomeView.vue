@@ -20,60 +20,34 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <div class="view-container">
-    <h1> GeoQuiz - Main Menu 🌍 </h1>
-    <p>Hi, <strong>{{ username }}</strong>! What you want to do today?</p>
+  <div class="view-container md-card">
+    <h1>GeoQuiz</h1>
+    <p>Welcome back, <strong>{{ username }}</strong>.</p>
     
-    <div class="menu-buttons">
-      <button @click="router.push('/game')">🚀 Play </button><br>
-      <button @click="router.push('/profile')">👤 My profile </button><br>
-      <button @click="router.push('/leaderboard')">🏆 Global leaderboard </button><br>
-      <button @click="router.push('/about')">📖 Istructions </button><br>
-      <button @click="handleLogout" class="btn-logout">🚪 Logout </button>
+    <div class="menu-list">
+      <button @click="router.push('/game')" class="btn-filled">Play Now</button>
+      <button @click="router.push('/profile')" class="btn-tonal">My Profile</button>
+      <button @click="router.push('/leaderboard')" class="btn-tonal">Leaderboard</button>
+      <button @click="router.push('/about')" class="btn-outlined">Instructions</button>
+      <button @click="handleLogout" class="btn-outlined logout-btn">Logout</button>
     </div>
   </div>
 </template>
 
-
-
-
 <style scoped>
-.view-container { text-align: center; }
-.menu-buttons button { width: 220px; margin: 10px; padding: 12px; cursor: pointer; min-width: 250px;}
-.btn-logout { border-color: #ff4757;  color: #ff4757; margin-top: 20px !important; }
-
-
-
-h1 {
-  font-size: 2.8rem;
-  margin-bottom: 10px;
-}
-
-p {
-  color: var(--text-muted);
-  font-size: 1.1rem;
-}
-
-
-.menu-buttons { 
+.menu-list {
   display: flex;
   flex-direction: column;
-  align-items: center;      /* Centra in orizzontale */
-  justify-content: center; /* Centra in verticale rispetto allo schermo */
-  flex-grow: 1;            /* Dice a questa sezione di occupare tutto lo spazio vuoto */
-  padding: 40px 20px;
-  text-align: center;
-
-  background: var(--card-bg);
-  padding: 40px;
-  border-radius: 24px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.05); /* Ombra leggerissima */
-  max-width: 450px;
-  width: 90%;
-  margin: auto;
+  gap: 8px;
 }
 
+.logout-btn {
+  margin-top: 16px;
+  color: var(--md-sys-color-error);
+  border-color: var(--md-sys-color-error);
+}
 
-
-
+.logout-btn:hover {
+  background-color: rgba(179, 38, 30, 0.08);
+}
 </style>

@@ -150,205 +150,170 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="game-container">
-    <div v-if="state === 'mode_selection'">
-      <h1> Modalità di gioco</h1>
-      <button @click="selectMode(0)"> Curiosità del mondo </button><br>
-      <button @click="selectMode(1)"> Cibo e tradizioni </button><br>
-      <button @click="selectMode(2)"> Solo Europa </button><br>
-      <button @click="goHome"> Indietro </button>
-    </div>
-
-    <div v-if="state === 'difficulty_selection'">
-      <h1> Difficoltà </h1>
-      <button @click="selectDifficulty(0)"> Facile </button><br>
-      <button @click="selectDifficulty(1)"> Media </button><br>
-      <button @click="selectDifficulty(2)"> Difficile </button><br>
-      <button @click="state = 'mode_selection'"> Indietro </button>
-    </div>
-
-    <div v-if="state === 'quiz'">
-      <div class="header-info">
-        <span>Punteggio: {{ score }} / {{ maxScore }}</span> | 
-        <span>Tempo: {{ timer }}s</span>
+  <div class="view-container md-card game-view">
+    <div v-if="state === 'mode_selection'" class="state-container">
+      <h1>Game Mode</h1>
+      <p>Select your category</p>
+      <div class="options-list">
+        <button @click="selectMode(0)" class="btn-filled">World Trivia</button>
+        <button @click="selectMode(1)" class="btn-tonal">Food & Traditions</button>
+        <button @click="selectMode(2)" class="btn-tonal">Europe Only</button>
+        <button @click="goHome" class="btn-outlined">Back</button>
       </div>
-      <div class="fact-box">
-        <p v-if="isLoading"><em>Recupero dati...</em></p>
+    </div>
+
+    <div v-if="state === 'difficulty_selection'" class="state-container">
+      <h1>Difficulty</h1>
+      <p>How hard do you want it?</p>
+      <div class="options-list">
+        <button @click="selectDifficulty(0)" class="btn-tonal">Easy</button>
+        <button @click="selectDifficulty(1)" class="btn-tonal">Medium</button>
+        <button @click="selectDifficulty(2)" class="btn-tonal">Hard</button>
+        <button @click="state = 'mode_selection'" class="btn-outlined">Back</button>
+      </div>
+    </div>
+
+    <div v-if="state === 'quiz'" class="state-container quiz-state">
+      <div class="header-info">
+        <div class="stat-badge">Score: {{ score }} / {{ maxScore }}</div>
+        <div class="stat-badge timer-badge">Time: {{ timer }}s</div>
+      </div>
+      
+      <div class="fact-card">
+        <p v-if="isLoading" class="loading-text">Recupero dati...</p>
         <p v-else>{{ currentFact }}</p>
       </div>
 
-      <div v-if="!isLoading" class="options-container">
+      <div v-if="!isLoading" class="quiz-grid">
         <button 
           v-for="opt in options" 
           :key="opt" 
           @click="checkAnswer(opt)"
+          class="btn-tonal quiz-btn"
           :class="{ 'correct': selectedOption === opt && opt === currentAnswer.value, 'wrong': selectedOption === opt && opt !== currentAnswer.value }"
         > 
           {{ opt }} 
         </button>
       </div>
-      <br>
-      <button @click="goHome"> Esci </button>
+      
+      <button @click="goHome" class="btn-outlined exit-btn">Exit</button>
     </div>
 
-    <div v-if="state === 'game_over'">
-      <h1> Partita Finita! </h1>
-      <p> Hai totalizzato {{ score }} punti! </p>
-      <button @click="goHome"> Torna al menu </button>
+    <div v-if="state === 'game_over'" class="state-container">
+      <h1>Game Over!</h1>
+      <p>You scored <strong>{{ score }}</strong> points!</p>
+      <button @click="goHome" class="btn-filled">Back to Menu</button>
     </div>
   </div>
 
-
-  <Transition name="pop">
-  <div v-if="selectedOption" class="feedback-overlay">
-    <div class="feedback-card" :class="isCorrect ? 'card-success' : 'card-error'">
-      
-      <div class="feedback-icon">
-        {{ selectedOption === 'timeout' ? '⏰' : (isCorrect ? '✅' : '❌') }}
+  <Transition name="fade">
+    <div v-if="selectedOption" class="feedback-overlay">
+      <div class="md-card feedback-card" :class="isCorrect ? 'success-border' : 'error-border'">
+        <div class="feedback-icon">
+          {{ selectedOption === 'timeout' ? '⏰' : (isCorrect ? '✅' : '❌') }}
+        </div>
+        <h2>
+          {{ selectedOption === 'timeout' ? 'Time out!' : (isCorrect ? 'Correct!' : 'Almost!') }}
+        </h2>
+        <p v-if="!isCorrect || selectedOption === 'timeout'">
+          The correct answer was:<br>
+          <strong class="correct-highlight">{{ currentAnswer.value || currentAnswer }}</strong>
+        </p>
+        <p v-else>Great job! +1 point</p>
       </div>
-
-      <h2>
-        {{ selectedOption === 'timeout' ? 'Time out!' : (isCorrect ? 'Correct!' : 'Ops, almost there!') }}
-      </h2>
-
-      <p v-if="!isCorrect || selectedOption === 'timeout'">
-        La risposta corretta era:<br>
-        <strong class="correct-text-highlight">{{ currentAnswer.value || currentAnswer }}</strong>
-      </p>
-      
-      <p v-else>Ottimo lavoro! +1 punto</p>
-      
     </div>
-  </div>
-</Transition>
+  </Transition>
 </template>
 
-
-
 <style scoped>
-.game-container { text-align: center; padding: 20px; }
+.game-view {
+  max-width: 600px;
+}
 
-.fact-box {
-  color: white; 
-  font-weight: 500;
-  font-style: italic;
-  background-color: var(--bg-color);
-  border-left: 5px solid var(--primary-color);
-  padding: 30px; 
-  width: 100%;       
-  max-width: 600px;  
-  margin: 0 auto 20px auto; 
-  border-radius: 10px; }
-
-.options-container { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 20px; 
-  max-width: 600px; 
-  width: 100%; 
-  margin: 0 auto;}
-
-
-button { padding: 20px 10px; cursor: pointer; font-weight: 600;}
-.correct { background-color: #4CAF50 !important; color: white; }
-.wrong { background-color: #f44336 !important; color: white; }
-
-
-
-.game-container > div {
+.state-container {
   display: flex;
   flex-direction: column;
-  align-items: center;    /* Centra i bottoni */
-  gap: 15px;             /* Finalmente lo spazio tra i bottoni! */
-  width: 100%;
-
-  /* Altezza minima per occupare la vista se necessario */
-  min-height: 60vh;
-  background: white;
-  padding: 50px;
-  border-radius: 30px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.05);
 }
 
-.game-container button {
-  width: 100%;
-  max-width: 300px;      
-  padding: 12px;
-}
-
-
-.game-container {
-  
-  flex: 1; 
+.options-list {
   display: flex;
   flex-direction: column;
-  
-  /* Centra tutto verticalmente e orizzontalmente */
-  justify-content: center; 
-  align-items: center;
-  
-  width: 100%;
-  padding: 20px;
-  box-sizing: border-box;
+  gap: 4px;
 }
 
-.header-info{
+.header-info {
   display: flex;
   justify-content: space-between;
-  width: 100%;
+  margin-bottom: 16px;
+}
+
+.stat-badge {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.timer-badge {
+  background-color: #fce4ec;
+  color: #880e4f;
+}
+
+.fact-card {
+  background-color: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline);
+  padding: 20px;
+  border-radius: 16px;
   margin-bottom: 20px;
-  padding: 0 10px;
-
-  font-weight: 700;
-  color: var(--secondary-color);
-  font-size: 0.9rem;
-  text-transform: uppercase;
+  text-align: left;
 }
 
-h1 {
-  margin-bottom: 30px;
-  color: var(--secondary-color);
-  font-size: 2rem;
+.quiz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
+.quiz-btn {
+  height: 64px;
+  padding: 8px;
+  text-transform: none;
+}
 
+.exit-btn {
+  margin-top: 12px;
+}
 
+.correct { background-color: #C8E6C9 !important; color: #1B5E20 !important; }
+.wrong { background-color: #FFCDD2 !important; color: #B71C1C !important; }
 
-
-/* Feedback utente in caso di errore o di risposta corretta */
 .feedback-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.4); /* Oscura leggermente il gioco dietro */
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* Sopra a ogni cosa */
-  backdrop-filter: blur(4px); /* Sfoca il gioco sullo sfondo */
+  z-index: 1000;
 }
-
 
 .feedback-card {
-  background: white;
-  padding: 40px;
-  border-radius: 30px;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  max-width: 400px;
-  width: 85%;
+  max-width: 320px;
+  width: 90%;
 }
 
-.card-success { border-bottom: 8px solid #2ecc71; }
-.card-error { border-bottom: 8px solid #e74c3c; }
+.feedback-icon { font-size: 3rem; margin-bottom: 8px; }
+.success-border { border-bottom: 4px solid #4CAF50; }
+.error-border { border-bottom: 4px solid #F44336; }
 
-.feedback-card h2 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-  color: var(--secondary-color);
+.correct-highlight {
+  color: #2E7D32;
+  font-size: 1.25rem;
 }
 
-
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

@@ -30,33 +30,81 @@ const goHome = () => router.push('/')
 </script>
 
 <template>
-  <div class="view-container">
-    <h1> Players leaderboard 🏆 </h1>
+  <div class="view-container md-card leaderboard-view">
+    <h1>Global Leaderboard</h1>
     
-    <div v-if="isLoading">Loading leaderboard...</div>
+    <div v-if="isLoading" class="loading-state">
+      <p>Fetching top explorers...</p>
+    </div>
     
-    <table v-else align="center" border="1" cellpadding="10" style="border-collapse: collapse; width: 80%; max-width: 500px;">
-      <thead>
-        <tr>
-          <th>Pos.</th>
-          <th>Player</th>
-          <th>Record</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(entry, index) in highScores" :key="entry.username">
-          <td>{{ index + 1 }}</td>
-          <td>{{ entry.username }}</td>
-          <td>{{ entry.highScore }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <br>
-    <button @click="goHome"> Back to Menu </button>
+    <div v-else class="table-container">
+      <table class="md-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(entry, index) in highScores" :key="entry.username">
+            <td class="rank-col">{{ index + 1 }}</td>
+            <td class="player-col">{{ entry.username }}</td>
+            <td class="score-col">{{ entry.highScore }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <button @click="goHome" class="btn-filled back-btn">Back to Menu</button>
   </div>
 </template>
 
 <style scoped>
-.view-container { text-align: center; padding: 20px; }
-button { margin: 10px; padding: 10px 20px; }
+.leaderboard-view {
+  max-width: 500px;
+}
+
+.loading-state {
+  padding: 40px;
+  color: var(--md-sys-color-secondary);
+}
+
+.table-container {
+  margin: 24px 0 32px 0;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.md-table th {
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  padding: 12px 16px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.md-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--md-sys-color-outline);
+  background-color: var(--md-sys-color-surface);
+}
+
+.md-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rank-col { font-weight: 700; width: 60px; color: var(--md-sys-color-primary); }
+.score-col { font-weight: 500; text-align: right; }
+
+.back-btn {
+  width: 100%;
+}
 </style>

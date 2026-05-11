@@ -53,21 +53,28 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div class="view-container">
-    <h1> Welcome on GeoQuiz 🌍 </h1>
-    <div class="login-box">
-      <h2> Login to continue </h2>
-      <input type="text" v-model="username" placeholder="Username" /><br>
-      <input type="password" v-model="password" placeholder="Password" /><br>
-      <button @click="handleLogin"> Login </button>
-      <button @click="handleRegister"> Register </button>
+  <div class="view-container md-card">
+    <h1>GeoQuiz</h1>
+    <p>Sign in to continue</p>
+    
+    <div class="login-form">
+      <div class="md-field">
+        <input type="text" v-model="username" placeholder="Username" />
+      </div>
+      <div class="md-field">
+        <input type="password" v-model="password" placeholder="Password" />
+      </div>
+      
+      <button @click="handleLogin" class="btn-filled">Login</button>
+      <button @click="handleRegister" class="btn-tonal">Register</button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.view-container { text-align: center; padding-top: 50px; }
-.login-box { border: 1px solid #ccc; display: inline-block; padding: 30px; border-radius: 8px; }
-input { margin: 10px; padding: 10px; }
-button { margin: 5px; padding: 10px 20px; cursor: pointer; }
+.login-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
 </style>
