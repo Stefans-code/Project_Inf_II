@@ -41,26 +41,26 @@ const handleRegister = async () => {
     const docSnap = await getDoc(userRef)
 
     if (docSnap.exists()) {
-      alert("Username già esistente!")
+      alert("Username already existing!")
     } else {
       await setDoc(userRef, { password: password.value, highScore: 0 })
-      alert("Registrazione completata!")
+      alert("Sign in completed!")
     }
   } catch (error) {
-    alert("Errore: " + error.message)
+    alert("Error: " + error.message)
   }
 }
 </script>
 
 <template>
   <div class="view-container">
-    <h1> Benvenuto su GeoQuiz 🌍 </h1>
+    <h1> Welcome on GeoQuiz 🌍 </h1>
     <div class="login-box">
-      <h2> Accedi per continuare </h2>
+      <h2> Login to continue </h2>
       <input type="text" v-model="username" placeholder="Username" /><br>
       <input type="password" v-model="password" placeholder="Password" /><br>
       <button @click="handleLogin"> Login </button>
-      <button @click="handleRegister"> Registrati </button>
+      <button @click="handleRegister"> Register </button>
     </div>
   </div>
 </template>
