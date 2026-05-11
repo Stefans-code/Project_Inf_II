@@ -21,14 +21,14 @@ const handleLogout = () => {
 
 <template>
   <div class="view-container">
-    <h1> GeoQuiz - Menu Principale 🌍 </h1>
-    <p>Ciao, <strong>{{ username }}</strong>! Cosa vuoi fare oggi?</p>
+    <h1> GeoQuiz - Main Menu 🌍 </h1>
+    <p>Hi, <strong>{{ username }}</strong>! What you want to do today?</p>
     
     <div class="menu-buttons">
-      <button @click="router.push('/game')">🚀 Inizia a Giocare </button><br>
-      <button @click="router.push('/profile')">👤 Il mio Profilo </button><br>
-      <button @click="router.push('/leaderboard')">🏆 Classifica Globale </button><br>
-      <button @click="router.push('/about')">📖 Istruzioni </button><br>
+      <button @click="router.push('/game')">🚀 Play </button><br>
+      <button @click="router.push('/profile')">👤 My profile </button><br>
+      <button @click="router.push('/leaderboard')">🏆 Global scoreboard </button><br>
+      <button @click="router.push('/about')">📖 Istructions </button><br>
       <button @click="handleLogout" class="btn-logout">🚪 Logout </button>
     </div>
   </div>
