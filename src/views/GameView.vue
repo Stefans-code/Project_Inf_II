@@ -71,7 +71,7 @@ const startNewRound = async () => {
   state.value = 'quiz'
   isLoading.value = true
   selectedOption.value = null
-  currentFact.value = "Caricamento fatto da Wikipedia..."
+  currentFact.value = "Loading fact from Wikipedia..."
   
   const availableCountries = getCountries(mode.value)
   currentAnswer.value = availableCountries[Math.floor(Math.random() * availableCountries.length)]
@@ -208,7 +208,7 @@ onUnmounted(() => {
       </div>
 
       <h2>
-        {{ selectedOption === 'timeout' ? 'Tempo Scaduto!' : (isCorrect ? 'Corretto!' : 'Ops, quasi!') }}
+        {{ selectedOption === 'timeout' ? 'Time out!' : (isCorrect ? 'Correct!' : 'Ops, almost there!') }}
       </h2>
 
       <p v-if="!isCorrect || selectedOption === 'timeout'">
