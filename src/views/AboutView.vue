@@ -9,20 +9,20 @@ const goHome = () => {
 
 <template>
   <div class="view-container">
-    <h1> Informazioni sul Gioco </h1>
+    <h1> Info about the game </h1>
     <div class="info-text">
-      <p><strong>GeoQuiz</strong> è un progetto educativo che mette alla prova le tue conoscenze geografiche.</p>
-      <h2> Come si gioca: </h2>
+      <p><strong>GeoQuiz</strong> is an educational project to challenge your geographical knowledge.</p>
+      <h2> How to play: </h2>
       <ul style="text-align: left; display: inline-block;">
-        <li>Scegli una modalità di gioco tra le 3 disponibili.</li>
-        <li>Leggi il fatto o la curiosità recuperata da Wikipedia.</li>
-        <li>Indovina a quale paese si riferisce tra le 4 opzioni.</li>
-        <li>Cerca di totalizzare il punteggio massimo (5 punti)!</li>
+        <li>Select a gamemode between the 3 options.</li>
+        <li>Read the fact or curiosity took from Wikipedia.</li>
+        <li>Guess about what country is between the 4 options.</li>
+        <li>Try to obtain the maximum score (5 points)!</li>
       </ul>
-      <p><em>Sviluppato per il corso di Informatica II.</em></p>
+      <p><em>Developed for the course of Informatic II.</em></p>
     </div>
     <br>
-    <button @click="goHome"> Torna al Menu </button>
+    <button @click="goHome"> Back to the Menu </button>
   </div>
 </template>
 
