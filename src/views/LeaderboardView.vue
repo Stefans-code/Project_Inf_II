@@ -31,15 +31,15 @@ const goHome = () => router.push('/')
 
 <template>
   <div class="view-container">
-    <h1> Classifica Giocatori 🏆 </h1>
+    <h1> Players leaderboard 🏆 </h1>
     
-    <div v-if="isLoading">Caricamento classifica...</div>
+    <div v-if="isLoading">Loading leaderboard...</div>
     
     <table v-else align="center" border="1" cellpadding="10" style="border-collapse: collapse; width: 80%; max-width: 500px;">
       <thead>
         <tr>
           <th>Pos.</th>
-          <th>Giocatore</th>
+          <th>Player</th>
           <th>Record</th>
         </tr>
       </thead>
@@ -52,7 +52,7 @@ const goHome = () => router.push('/')
       </tbody>
     </table>
     <br>
-    <button @click="goHome"> Torna al Menu </button>
+    <button @click="goHome"> Back to Menu </button>
   </div>
 </template>
 
