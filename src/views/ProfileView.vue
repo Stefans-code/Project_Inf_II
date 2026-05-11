@@ -25,11 +25,11 @@ const goHome = () => router.push('/')
 
 <template>
   <div class="view-container">
-    <h1> Profilo Giocatore (Cloud) </h1>
+    <h1> player profile (Cloud) </h1>
     <p><strong>Email:</strong> {{ userEmail }}</p>
-    <p><strong>Record su Firebase:</strong> {{ highScore }} punti</p>
+    <p><strong>Record on Firebase:</strong> {{ highScore }} points</p>
     
-    <button @click="goHome"> Torna al Menu </button>
+    <button @click="goHome"> Back to Menu </button>
   </div>
 </template>
 
