@@ -4,7 +4,7 @@ Questa documentazione è stata redatta con un livello di dettaglio avanzato per 
 
 ---
 
-## 1. Architettura del Sistema
+## 1. Architettura del Sistema 
 
 Il progetto adotta un'architettura **Single Page Application (SPA)** basata su **Vue.js 3**.
 
@@ -14,8 +14,29 @@ Il progetto adotta un'architettura **Single Page Application (SPA)** basata su *
 - **Firebase Firestore (Data Layer)**: Database NoSQL orientato ai documenti. Ogni "oggetto" è un documento memorizzato in una "collezione". Nel nostro caso, la collezione `utenti` funge da schema principale.
 
 ---
+## 2.Punto d'ingresso dell'applicazione(`main.js`)
 
-## 2. Analisi Tecnica della Logica di Business (`script.js`)
+Questo file è l'entry point dell'intera architettura software. Il suo compito è quello di inizializzare l'istanza dell'applicazione Vue e configurare l'ambiente runtime prima che l'interfaccia venga mostrata all'utente.
+
+Il processo inizia con l'importazione della funzione `createApp` e del componente `App.vue` che funge da contenitore principale per l'intera interfaccia. Il file  importa gli stili globali tramite `style.css` e attraverso `app.use(router)` inietta il sistema di routing, permettendo all'SPA di gestire la navigazione senza dover ricaricare la pagina web.
+
+Il ciclo di avvio si conclude con l'istruzione `app.mount('#app')`. Questo comando stabilisce il legame tra il framework e il documento HTML statico: Vue prende il controllo del nodo del DOM identificato dall'ID `app`(definito in `index.html`), iniettandovi i componenti e rendendo l'applicazione reattiva e interattiva.
+
+---
+
+
+## 3. Gestione della navigazione: il sistema di routing(`router/index.js`)
+
+Il file `index.js` contenuto nella cartella `router` ha il compito di gestire l'intera logica di navigazione dell'applicazione.
+Trattandosi di una Single Page Application, il passaggio da una sezione all'altra non avviene tramite il caricamento di nuove pagine HTML dal server, ma attraverso la manipolazione dinamica del DOM gestita dal plugin Vue Router.
+
+All'interno di questo file viene definita la costante `router` tramite la funzione `create router`. La configurazione si articola su due pilastri principali:
+- **La gestione della cronologia(`history`)**: utilizzando `createHistory`, l'applicazione permette all'utente di usare i tasti per andare avanti e indietro come in un sito multipagina tradizionale, pur restando tecnicamente sempre all'interno della stessa pagina
+- **Definizione di percorsi di navigazione(`routes`): questo è il nucleo del file, dove viene definito un array di oggetti. Ogni oggetto associa un percorso URL(es. `/game`) a un componente specifico(es. `GameView`). In questo modo, quando l'utente naviga verso un determinato indirizzo, il router sa esattamente quale componente iniettare dentro il tag `<router-view />` presente nel file pricipale `App.vue`.
+
+Infine, l'istanza del router viene esportata per essere utilizzata dal punto d'ingresso dell'app(`main.js`), garantendo così che l'intera struttura sia consapevole dello stato della navigazione in ogni momento.
+
+## 4. Analisi Tecnica della Logica di Business (`script.js`)
 
 Questo file contiene la logica "pura" dell'applicazione, separata dall'interfaccia utente (UI).
 
@@ -30,7 +51,7 @@ Questo file contiene la logica "pura" dell'applicazione, separata dall'interfacc
 
 ---
 
-## 3. Gestione dello Stato e Reattività (`GameView.vue`)
+## 5. Gestione dello Stato e Reattività (`GameView.vue`)
 
 Utilizziamo la **Composition API** per gestire lo stato del gioco in modo granulare.
 
@@ -47,7 +68,7 @@ Per mescolare le risposte usiamo: `options.value.sort(() => Math.random() - 0.5)
 
 ---
 
-## 4. Integrazione Backend e Cloud (`firebase.js` & Auth)
+## 6. Integrazione Backend e Cloud (`firebase.js` & Auth)
 
 ### Autenticazione Firestore:
 Invece di usare Firebase Auth standard (OAuth), abbiamo costruito un sistema di controllo diretto su Firestore:
@@ -60,7 +81,7 @@ Invece di usare Firebase Auth standard (OAuth), abbiamo costruito un sistema di 
 
 ---
 
-## 5. Design System: Material Design 3
+## 7. Design System: Material Design 3
 
 L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
@@ -71,7 +92,7 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
 ---
 
-## 6. Possibili Domande Tecniche Avanzate (DOMANDE D'ESAME)
+## 8. Possibili Domande Tecniche Avanzate (DOMANDE D'ESAME)
 
 **D: Come gestisci l'asincronia se l'utente clicca velocemente più pulsanti?**
 *R: Abbiamo implementato un "lock" logico. Nella funzione `checkAnswer`, controlliamo se `selectedOption.value` è già valorizzato. Se lo è, la funzione esce immediatamente (`return`), impedendo all'utente di rispondere due volte alla stessa domanda o di accumulare punti extra.*
@@ -87,7 +108,7 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
 ---
 
-## 7. Struttura dei File
+## 9. Struttura dei File
 ```text
 /
 ├── script.js          # Business Logic (Wikipedia, Regex, Sanitization)
