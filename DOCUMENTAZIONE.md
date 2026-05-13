@@ -36,6 +36,8 @@ All'interno di questo file viene definita la costante `router` tramite la funzio
 
 Infine, l'istanza del router viene esportata per essere utilizzata dal punto d'ingresso dell'app(`main.js`), garantendo così che l'intera struttura sia consapevole dello stato della navigazione in ogni momento.
 
+---
+
 ## 4. Analisi Tecnica della Logica di Business (`script.js`)
 
 Questo file contiene la logica "pura" dell'applicazione, separata dall'interfaccia utente (UI).
