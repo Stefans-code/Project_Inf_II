@@ -12,7 +12,9 @@ const password = ref("")
  * LOGIN: Controlla le credenziali su Firestore
  */
 const handleLogin = async () => {
-  if (!username.value || !password.value) return alert("Inserisci i dati!")
+  if (!username.value && !password.value) return alert("Insert the data!")
+  else if (!username.value) return alert("Username is missing")
+  else if (!password.value) return alert("Password is missing")
   
   try {
     const userRef = doc(db, "utenti", username.value)
@@ -23,10 +25,10 @@ const handleLogin = async () => {
       localStorage.setItem('username', username.value)
       router.push('/') // Va alla Home (Menu) dopo il login
     } else {
-      alert("Credenziali errate!")
+      alert("Wrong credentials!")
     }
   } catch (error) {
-    alert("Errore: " + error.message)
+    alert("Error: " + error.message)
   }
 }
 
@@ -34,7 +36,9 @@ const handleLogin = async () => {
  * REGISTRAZIONE: Crea un nuovo utente
  */
 const handleRegister = async () => {
-  if (!username.value || !password.value) return alert("Inserisci i dati!")
+  if (!username.value && !password.value) return alert("Insert the data!")
+  else if (!username.value) return alert("Username is missing")
+  else if (!password.value) return alert("Password is missing")
   
   try {
     const userRef = doc(db, "utenti", username.value)

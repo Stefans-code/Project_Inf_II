@@ -12,6 +12,8 @@ const difficulty = ref(0)
 const score = ref(0)
 const maxScore = 5
 
+const answers = ref(0)
+
 const currentFact = ref("")
 const currentAnswer = ref("")
 const options = ref([])
@@ -20,6 +22,8 @@ const timer = ref(15)
 let timerInterval = null
 const selectedOption = ref(null)
 const isCorrect = ref(false);
+
+let alreadyUsedCountrys = []
 
 const startTimer = () => {
   // Reset totale di ogni timer precedente
@@ -67,6 +71,8 @@ const selectDifficulty = (d) => {
 }
 
 const startNewRound = async () => {
+  answers.value = 0
+  alreadyUsedCountrys = [] // resets the list for the new round
   if (timerInterval) clearInterval(timerInterval)
   state.value = 'quiz'
   isLoading.value = true
@@ -74,7 +80,12 @@ const startNewRound = async () => {
   currentFact.value = "Loading fact from Wikipedia..."
   
   const availableCountries = getCountries(mode.value)
-  currentAnswer.value = availableCountries[Math.floor(Math.random() * availableCountries.length)]
+  do {
+    currentAnswer.value = availableCountries[Math.floor(Math.random() * availableCountries.length)]
+  } while(alreadyUsedCountrys.includes(currentAnswer.value))
+  
+  alreadyUsedCountrys.push(currentAnswer.value) // prevents using the same country
+
   currentFact.value = await getCountryInfo(currentAnswer.value, mode.value)
   
   let ops = [currentAnswer.value]
@@ -97,11 +108,12 @@ const checkAnswer = (selected) => {
   isCorrect.value = (selected === currentAnswer.value);
 
   setTimeout(() => {
+    answers.value++
     if (isCorrect.value) {
       score.value++;
     }
-
-    if (score.value >= maxScore.value) {
+                                      //ensures that the game stops after 5 attempts
+    if (score.value >= maxScore.value || answers.value >= maxScore.value) {
       state.value = 'game_over';
       updateHighScore();
     } else {

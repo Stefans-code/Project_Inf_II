@@ -6,11 +6,11 @@ import { doc, getDoc } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 
 const router = useRouter()
-const username = ref(localStorage.getItem('username') || "Ospite")
+const username = ref(localStorage.getItem('username') || "Guest")
 const highScore = ref(0)
 
 onMounted(async () => {
-  if (username.value !== "Ospite") {
+  if (username.value !== "Guest") {
     // Recupera i dati dal documento dell'utente basato sull'Username
     const userRef = doc(db, "utenti", username.value)
     const docSnap = await getDoc(userRef)

@@ -4,7 +4,7 @@ Questa documentazione è stata redatta con un livello di dettaglio avanzato per 
 
 ---
 
-## 1. Architettura del Sistema
+## 1. Architettura del Sistema 
 
 Il progetto adotta un'architettura **Single Page Application (SPA)** basata su **Vue.js 3**.
 
@@ -14,8 +14,31 @@ Il progetto adotta un'architettura **Single Page Application (SPA)** basata su *
 - **Firebase Firestore (Data Layer)**: Database NoSQL orientato ai documenti. Ogni "oggetto" è un documento memorizzato in una "collezione". Nel nostro caso, la collezione `utenti` funge da schema principale.
 
 ---
+## 2.Punto d'ingresso dell'applicazione(`main.js`)
 
-## 2. Analisi Tecnica della Logica di Business (`script.js`)
+Questo file è l'entry point dell'intera architettura software. Il suo compito è quello di inizializzare l'istanza dell'applicazione Vue e configurare l'ambiente runtime prima che l'interfaccia venga mostrata all'utente.
+
+Il processo inizia con l'importazione della funzione `createApp` e del componente `App.vue` che funge da contenitore principale per l'intera interfaccia. Il file  importa gli stili globali tramite `style.css` e attraverso `app.use(router)` inietta il sistema di routing, permettendo all'SPA di gestire la navigazione senza dover ricaricare la pagina web.
+
+Il ciclo di avvio si conclude con l'istruzione `app.mount('#app')`. Questo comando stabilisce il legame tra il framework e il documento HTML statico: Vue prende il controllo del nodo del DOM identificato dall'ID `app`(definito in `index.html`), iniettandovi i componenti e rendendo l'applicazione reattiva e interattiva.
+
+---
+
+
+## 3. Gestione della navigazione: il sistema di routing(`router/index.js`)
+
+Il file `index.js` contenuto nella cartella `router` ha il compito di gestire l'intera logica di navigazione dell'applicazione.
+Trattandosi di una Single Page Application, il passaggio da una sezione all'altra non avviene tramite il caricamento di nuove pagine HTML dal server, ma attraverso la manipolazione dinamica del DOM gestita dal plugin Vue Router.
+
+All'interno di questo file viene definita la costante `router` tramite la funzione `create router`. La configurazione si articola su due pilastri principali:
+- **La gestione della cronologia(`history`)**: utilizzando `createHistory`, l'applicazione permette all'utente di usare i tasti per andare avanti e indietro come in un sito multipagina tradizionale, pur restando tecnicamente sempre all'interno della stessa pagina
+- **Definizione di percorsi di navigazione(`routes`): questo è il nucleo del file, dove viene definito un array di oggetti. Ogni oggetto associa un percorso URL(es. `/game`) a un componente specifico(es. `GameView`). In questo modo, quando l'utente naviga verso un determinato indirizzo, il router sa esattamente quale componente iniettare dentro il tag `<router-view />` presente nel file pricipale `App.vue`.
+
+Infine, l'istanza del router viene esportata per essere utilizzata dal punto d'ingresso dell'app(`main.js`), garantendo così che l'intera struttura sia consapevole dello stato della navigazione in ogni momento.
+
+---
+
+## 4. Analisi Tecnica della Logica di Business (`script.js`)
 
 Questo file contiene la logica "pura" dell'applicazione, separata dall'interfaccia utente (UI).
 
@@ -30,7 +53,31 @@ Questo file contiene la logica "pura" dell'applicazione, separata dall'interfacc
 
 ---
 
-## 3. Gestione dello Stato e Reattività (`GameView.vue`)
+## 5. Il componente radice: `App.vue`
+
+Il file `App.vue` rappresenta il guscio che racchiude le altri parti del sito. Essendo il componente radice(root component), è il primo pezzo dell'interfaccia che viene caricato nella pagina HTML.
+La struttura del file si divide in tre parti:
+- **la logica**(`<script>`): qui viene importato il componente routerView, strumento fondamentalee per permettere a Vue di sapere dove "proiettare" i vari contenuti(come la Home, la pagina di login, ecc..) quando l'utente naviga nel sito.
+- **la struttura visiva**(`<template>`): qui è definito il layout generale. In particolare è presente il tag `<RouterView />` che funge da "contenitore" per il componente corrispondente all'indirizzo URL attuale. C'è anche un `<footer>` statico, poichè si trova fuori dal `RouterView` il copiright e le informazioni del corso rimangono visibili in fondo alla pagina indipendentemente dalla sezione in cui si trova l'utente.
+- **lo stile**(`<style>`): qui vengono definiti i parametri grafici del layout principale, come la centratura dei contenuti, l'aspetto del test, garantendo che l'app abbia un aspetto coerente su ogni schermata.
+
+  
+---
+
+## 6. Logica di Accesso (`LoginView.vue`)
+
+Il componente (`LoginView.vue`) gestisce l'accesso e la registrazione degli utenti. L'applicazione interagisce direttamente co il database Firebase Firestore èer verificare le identità esistenti e registrarne di nuove. La logica è progettata per essere asincrona, garantendo che l'interfaccia non si blocchi durante l'attesa dei dati dal server.
+
+- **la funzione `handleLogin`**: dopo una prima verifica èer assicurarsi che i campi non siano vuoti, il codice cerca nel database un documento specifico nella collezione "utenti". Se il documento viene trovato e la password salvata su Firebase corrisponde a quella inserita, l'accesso viene confermato. L'uso di `localStorage` permette all'app di salvare l'username e lo stato di login nella memoria del browser. Questo consente al sito di riconoscere l'utente anche se la pagina viene ricaricata. Una volta completato il processo, il router reinderizza automaticamente l'utente verso la dasjboard principale.
+- **la funzione `handleRegister`**: la funzione di registrazione seggue un flusso simile ma inverso. Prima di creare un nuovo account, il sistema controlla che l'username scelto non sia già presente nel database per evitare conflitti. Se il controllo è positivo, viene creato un nuovo record su Firestore dove, oltre alla password, viene inizializzato il campo `highScore` a zero. Questo assicura che ogni nuovo utente abbia  già una struttura dati pronta per salvare i futuri record ottenuti nel gioco.
+
+**Feedback utente**
+Il feedback all'utente è gestiro tramite messaggi di avviso(`alert`) che comunicano immediatamente l'esito delle operazioni, come la mancanza di credentiali, un errore di battitura o il successo della registrazione.
+
+---
+
+
+## 7. Gestione dello Stato e Reattività (`GameView.vue`)
 
 Utilizziamo la **Composition API** per gestire lo stato del gioco in modo granulare.
 
@@ -47,7 +94,7 @@ Per mescolare le risposte usiamo: `options.value.sort(() => Math.random() - 0.5)
 
 ---
 
-## 4. Integrazione Backend e Cloud (`firebase.js` & Auth)
+## 8. Integrazione Backend e Cloud (`firebase.js` & Auth)
 
 ### Autenticazione Firestore:
 Invece di usare Firebase Auth standard (OAuth), abbiamo costruito un sistema di controllo diretto su Firestore:
@@ -60,7 +107,7 @@ Invece di usare Firebase Auth standard (OAuth), abbiamo costruito un sistema di 
 
 ---
 
-## 5. Design System: Material Design 3
+## 9. Design System: Material Design 3
 
 L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
@@ -71,7 +118,7 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
 ---
 
-## 6. Possibili Domande Tecniche Avanzate (DOMANDE D'ESAME)
+## 10. Possibili Domande Tecniche Avanzate (DOMANDE D'ESAME)
 
 **D: Come gestisci l'asincronia se l'utente clicca velocemente più pulsanti?**
 *R: Abbiamo implementato un "lock" logico. Nella funzione `checkAnswer`, controlliamo se `selectedOption.value` è già valorizzato. Se lo è, la funzione esce immediatamente (`return`), impedendo all'utente di rispondere due volte alla stessa domanda o di accumulare punti extra.*
@@ -87,7 +134,7 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
 ---
 
-## 7. Struttura dei File
+## 11. Struttura dei File
 ```text
 /
 ├── script.js          # Business Logic (Wikipedia, Regex, Sanitization)
