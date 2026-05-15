@@ -26,6 +26,9 @@ onMounted(async () => {
   }
 })
 
+/** 
+ * NAVIGAZIONE: Torna alla pagina principale (Menu).
+ */
 const goHome = () => router.push('/')
 </script>
 

@@ -12,6 +12,9 @@ onMounted(() => {
   }
 })
 
+/** 
+ * LOGOUT: Pulisce la sessione locale (userLogged e username) e reindirizza al Login.
+ */
 const handleLogout = () => {
   localStorage.removeItem('userLogged')
   localStorage.removeItem('username')

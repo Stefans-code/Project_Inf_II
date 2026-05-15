@@ -25,20 +25,24 @@ const isCorrect = ref(false);
 
 let alreadyUsedCountrys = []
 
+/** 
+ * GESTORE TIMER: Avvia il conto alla rovescia di 15 secondi per ogni domanda.
+ * Se il tempo scade, invoca handleTimeout().
+ */
 const startTimer = () => {
-  // Reset totale di ogni timer precedente
+  // Reset totale di ogni timer precedente per evitare sovrapposizioni
   if (timerInterval) clearInterval(timerInterval);
   timer.value = 15;
 
   timerInterval = setInterval(() => {
-    //Se la card di feedback è aperta, il timer si ferma
+    // Se la card di feedback è aperta, il timer si ferma temporaneamente
     if (selectedOption.value !== null) return;
 
     if (timer.value > 0) {
       timer.value--;
     } else {
       clearInterval(timerInterval);
-      //il timeout scatta solo se non è già stata data una risposta
+      // Il timeout scatta solo se non è già stata data una risposta
       if (selectedOption.value === null) {
         handleTimeout();
       }
@@ -47,6 +51,10 @@ const startTimer = () => {
 };
 
 // funzione per gestire il tempo scaduto graficamente
+/** 
+ * GESTIONE TIMEOUT: Se il tempo scade, il giocatore non riceve punti e viene 
+ * conteggiato un tentativo (consuma una delle 5 domande del test).
+ */
 const handleTimeout = () => {
   if (selectedOption.value !== null) return;
 
@@ -54,51 +62,82 @@ const handleTimeout = () => {
   selectedOption.value = 'timeout';
   
   setTimeout(() => {
-    selectedOption.value = null; // Chiude la card
-    startNewRound();             // Carica il nuovo round e fa ripartire il timer
+    answers.value++;
+    // Se abbiamo raggiunto il limite di 5 domande, finisce il gioco
+    if (answers.value >= maxScore) {
+      state.value = 'game_over';
+      updateHighScore();
+    } else {
+      selectedOption.value = null;
+      startNewRound();
+    }
   }, 2000);
 };
 
 
+/** 
+ * SELEZIONE MODALITÀ: Imposta la categoria di gioco (Mondo, Cibo, Europa).
+ * @param {number} m - L'indice della modalità scelta.
+ */
 const selectMode = (m) => {
   mode.value = m
   state.value = 'difficulty_selection'
 }
 
+/** 
+ * SELEZIONE DIFFICOLTÀ: Imposta la difficoltà e inizializza i punteggi per la nuova partita.
+ * @param {number} d - L'indice della difficoltà.
+ */
 const selectDifficulty = (d) => {
   difficulty.value = d
+  answers.value = 0
+  score.value = 0
+  alreadyUsedCountrys = []
   startNewRound()
 }
 
+/** 
+ * INIZIO NUOVO ROUND: Estrae un paese casuale (non duplicato), recupera il fatto 
+ * da Wikipedia e genera le opzioni di risposta.
+ */
 const startNewRound = async () => {
-  answers.value = 0
-  alreadyUsedCountrys = [] // resets the list for the new round
   if (timerInterval) clearInterval(timerInterval)
   state.value = 'quiz'
   isLoading.value = true
   selectedOption.value = null
   currentFact.value = "Loading fact from Wikipedia..."
   
+  // Selezione del paese corretto (evita duplicati nella stessa sessione)
   const availableCountries = getCountries(mode.value)
   do {
     currentAnswer.value = availableCountries[Math.floor(Math.random() * availableCountries.length)]
   } while(alreadyUsedCountrys.includes(currentAnswer.value))
   
-  alreadyUsedCountrys.push(currentAnswer.value) // prevents using the same country
+  alreadyUsedCountrys.push(currentAnswer.value)
 
+  // Chiamata all'API di Wikipedia tramite script.js
   currentFact.value = await getCountryInfo(currentAnswer.value, mode.value)
   
+  /** 
+   * GENERAZIONE OPZIONI: Crea un array di 4 risposte (1 corretta + 3 casuali).
+   */
   let ops = [currentAnswer.value]
   while (ops.length < 4) {
     let c = availableCountries[Math.floor(Math.random() * availableCountries.length)]
     if (!ops.includes(c)) ops.push(c)
   }
+  // Mescola le risposte in ordine casuale
   options.value = ops.sort(() => Math.random() - 0.5)
   
   isLoading.value = false
   startTimer()
 }
 
+/** 
+ * VERIFICA RISPOSTA: Controlla se la risposta scelta è corretta, aggiorna il punteggio 
+ * e gestisce il passaggio alla domanda successiva o alla fine del gioco.
+ * @param {string} selected - Il paese selezionato dall'utente.
+ */
 const checkAnswer = (selected) => {
   if (selectedOption.value !== null) return;
 
@@ -112,8 +151,10 @@ const checkAnswer = (selected) => {
     if (isCorrect.value) {
       score.value++;
     }
-                                      //ensures that the game stops after 5 attempts
-    if (score.value >= maxScore.value || answers.value >= maxScore.value) {
+    
+    // LOGICA DI FINE GIOCO: Il test termina rigorosamente dopo 5 tentativi (risposte date o timeout)
+    if (answers.value >= maxScore) {
+      selectedOption.value = null;
       state.value = 'game_over';
       updateHighScore();
     } else {
@@ -151,6 +192,9 @@ const updateHighScore = async () => {
   }
 }
 
+/** 
+ * NAVIGAZIONE: Torna alla home e pulisce il timer.
+ */
 const goHome = () => {
   if (timerInterval) clearInterval(timerInterval)
   router.push('/')
@@ -202,7 +246,7 @@ onUnmounted(() => {
           :key="opt" 
           @click="checkAnswer(opt)"
           class="btn-tonal quiz-btn"
-          :class="{ 'correct': selectedOption === opt && opt === currentAnswer.value, 'wrong': selectedOption === opt && opt !== currentAnswer.value }"
+          :class="{ 'correct': selectedOption === opt && opt === currentAnswer, 'wrong': selectedOption === opt && opt !== currentAnswer }"
         > 
           {{ opt }} 
         </button>
@@ -212,29 +256,13 @@ onUnmounted(() => {
     </div>
 
     <div v-if="state === 'game_over'" class="state-container">
-      <h1>Game Over!</h1>
-      <p>You scored <strong>{{ score }}</strong> points!</p>
+      <h1>Results</h1>
+      <p>Final Score: <strong>{{ score }} / {{ maxScore }}</strong></p>
       <button @click="goHome" class="btn-filled">Back to Menu</button>
     </div>
   </div>
 
-  <Transition name="fade">
-    <div v-if="selectedOption" class="feedback-overlay">
-      <div class="md-card feedback-card" :class="isCorrect ? 'success-border' : 'error-border'">
-        <div class="feedback-icon">
-          {{ selectedOption === 'timeout' ? '⏰' : (isCorrect ? '✅' : '❌') }}
-        </div>
-        <h2>
-          {{ selectedOption === 'timeout' ? 'Time out!' : (isCorrect ? 'Correct!' : 'Almost!') }}
-        </h2>
-        <p v-if="!isCorrect || selectedOption === 'timeout'">
-          The correct answer was:<br>
-          <strong class="correct-highlight">{{ currentAnswer.value || currentAnswer }}</strong>
-        </p>
-        <p v-else>Great job! +1 point</p>
-      </div>
-    </div>
-  </Transition>
+
 </template>
 
 <style scoped>
