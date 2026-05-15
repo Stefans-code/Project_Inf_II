@@ -131,7 +131,7 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
 ---
 
-## 101. Possibili Domande Tecniche Avanzate (DOMANDE D'ESAME)
+## 11. Possibili Domande Tecniche Avanzate (DOMANDE D'ESAME)
 
 **D: Come gestisci l'asincronia se l'utente clicca velocemente più pulsanti?**
 *R: Abbiamo implementato un "lock" logico. Nella funzione `checkAnswer`, controlliamo se `selectedOption.value` è già valorizzato. Se lo è, la funzione esce immediatamente (`return`), impedendo all'utente di rispondere due volte alla stessa domanda o di accumulare punti extra.*
