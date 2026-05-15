@@ -14,9 +14,12 @@ const firebaseConfig = {
   measurementId: "G-75HK96256V"
 };
 
-// Inizializza Firebase
+// Inizializza l'applicazione Firebase con la configurazione definita
 const app = initializeApp(firebaseConfig);
 
-// Esporta i servizi per usarli nelle pagine
+/** 
+ * SERVIZI FIREBASE: Esportiamo l'autenticazione e il database Firestore
+ * per poterli utilizzare in tutti i componenti dell'applicazione.
+ */
 export const auth = getAuth(app);
 export const db = getFirestore(app);

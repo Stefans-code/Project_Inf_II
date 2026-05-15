@@ -15,7 +15,8 @@ const EUROPEAN_COUNTRIES = [
 
 /** 
  * LOGICA DI SELEZIONE: Restituisce l'array di paesi in base alla modalità selezionata.
- * Questo permette di riutilizzare la stessa logica di gioco per sfide diverse.
+ * @param {number} mode - 0 per World, 1 per Food, 2 per Europe.
+ * @returns {Array} La lista dei nomi dei paesi.
  */
 export function getCountries(mode) {
   if (mode === 2) return EUROPEAN_COUNTRIES; 
@@ -23,15 +24,20 @@ export function getCountries(mode) {
 }
 
 /** 
- * Lista di parole da censurare per non rendere il quiz troppo ovvio (nomi di paesi, lingue, ecc.)
+ * BLACKLIST PAROLE: Restituisce una lista di parole da censurare (nomi paesi, lingue) 
+ * per non rendere il quiz troppo facile.
+ * @param {string} name - Il nome del paese corrente.
+ * @returns {Array} La lista di parole da oscurare.
  */
 export function getCountryBlacklist(/** @type string */ name) {
     return [name, "italian", "italy", "france", "germany", "spain", "japan", "brazil", "republic", "kingdom", "state", "country"];
 }
 
 /** 
- * Funzione principale che recupera il fatto da Wikipedia.
- * Gestisce anche la modalità "Cibo" aggiungendo una specifica alla ricerca.
+ * RECUPERO INFO PAESE: Ottiene un estratto da Wikipedia per il paese specificato.
+ * @param {string} countryName - Il nome del paese da cercare.
+ * @param {number} mode - La modalità di gioco (se 1, cerca la cucina).
+ * @returns {Promise<string>} Il testo della curiosità già pulito e censurato.
  */
 export async function getCountryInfo(/** @type string */ countryName, mode = 0) {
   let searchQuery = countryName;
@@ -52,7 +58,9 @@ export async function getCountryInfo(/** @type string */ countryName, mode = 0) 
 }
 
 /** 
- * Effettua la chiamata HTTP all'API REST di Wikipedia.
+ * CHIAMATA API WIKIPEDIA: Effettua la richiesta HTTP alle API REST di Wikipedia.
+ * @param {string} query - La stringa di ricerca.
+ * @returns {Promise<Object>} Un oggetto contenente l'estratto della pagina o un errore.
  */
 export async function getData(/** @type string */ query) {
   let data = { error: -1, response: [] };
@@ -91,13 +99,26 @@ export function sanitizeString(/** @type string */ stringToClear, /** @type Arra
 /** 
  * Rimuove i tag HTML (es. <span>) che Wikipedia restituisce a volte negli estratti.
  */
+/** 
+ * PULIZIA DATI WIKIPEDIA: Rimuove tag HTML e decodifica le entità comuni (apostrofi, ecc.)
+ * per garantire una lettura pulita del fatto nel quiz.
+ */
 export function trimTags( /** @type string*/str) {
   if (!str) return "";
-  return str.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  return str
+    .replace(/<[^>]*>/g, '')          // Rimuove i tag HTML (es. <span>)
+    .replace(/&nbsp;/g, ' ')         // Converte gli spazi non-breaking
+    .replace(/&#039;/g, "'")         // Decodifica l'apostrofo (fondamentale per i nomi inglesi)
+    .replace(/&amp;/g, "&")          // Decodifica la &
+    .replace(/&quot;/g, '"')         // Decodifica le virgolette
+    .trim();
 }
 
 /** 
- * Sostituisce il nome del paese con degli asterischi (***) all'interno del testo.
+ * CENSURA NOMI: Sostituisce il nome del paese con degli asterischi (***) nel testo.
+ * @param {string} value - Il testo originale.
+ * @param {Array} names - La lista di nomi da censurare.
+ * @returns {string} Il testo censurato.
  */
 export function censoreName(/** @type string*/ value, /** @type Array*/ names) {
   if (!value) return "";

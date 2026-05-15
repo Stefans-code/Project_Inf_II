@@ -2,6 +2,9 @@
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+/** 
+ * NAVIGAZIONE: Torna alla pagina principale (Menu).
+ */
 const goHome = () => {
   router.push('/')
 }

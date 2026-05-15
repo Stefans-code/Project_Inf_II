@@ -162,3 +162,22 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 │   ├── views/         # Componenti Pagina (Home, Game, Profile, etc.)
 │   └── router/        # Configurazione Vue Router (Single Page Navigation)
 ```
+
+## Dettagli Tecnici Recenti
+
+### 1. Logica di Gioco (Game Loop)
+- **Sessione a 5 domande**: Ogni partita è composta rigorosamente da 5 tentativi. Un tentativo viene consumato sia dando una risposta (giusta o sbagliata) sia lasciando scadere il timer (Time Out).
+- **Reset di sessione**: Il conteggio delle risposte e del punteggio viene azzerato solo quando l'utente seleziona la difficoltà, permettendo un tracciamento preciso durante i 5 round.
+- **Evitamento Duplicati**: Durante i 5 round, il sistema tiene traccia dei paesi già estratti per evitare che la stessa nazione appaia più volte nella stessa partita.
+
+### 2. Pulizia Dati Wikipedia
+Per garantire un'esperienza utente pulita, i dati estratti dalle API di Wikipedia passano attraverso un processo di "sanitizzazione":
+- **Rimozione Tag HTML**: Vengono rimossi tag come `<span>` o `<b>` restituiti a volte dalle API.
+- **Decodifica Entità**: Caratteri speciali come `&#039;` vengono convertiti in apostrofi leggibili.
+- **Censura Dinamica**: Il nome del paese (e le parole chiave correlate) vengono sostituiti con `***` per non rivelare la soluzione all'interno della curiosità.
+
+### 3. Design System (Material Design 3)
+Il progetto utilizza i principi del **Material Design 3 (M3)**:
+- **Card-based Layout**: L'interfaccia usa card con angoli arrotondati e ombre leggere per dare profondità.
+- **Feedback Visivo Immediato**: Invece di pop-up invasivi, il sistema comunica l'esito colorando istantaneamente il bottone selezionato (Verde = Corretto, Rosso = Errato) per 2 secondi prima di procedere.
+- **Accessibilità**: I contrasti cromatici sono stati studiati per garantire la leggibilità su diversi dispositivi.
