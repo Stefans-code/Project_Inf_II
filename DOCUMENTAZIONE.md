@@ -145,6 +145,8 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 **D: Perché usi `v-for` con la `:key`?**
 *R: La `:key` è fondamentale per l'algoritmo di "diffing" di Vue. Permette al framework di identificare univocamente ogni elemento della lista e aggiornare solo quelli necessari nel DOM, invece di ricreare l'intera lista, migliorando drasticamente le prestazioni.*
 
+**D: Perché il footer non scompare mai quando cambio pagina?**
+*R: Perché il footer è scritto direttamente in App.vue, fuori dal tag `<RouterView />`. Solo quello che sta dentro `<RouterView />` cambia in base alla rotta, mentre tutto ciò che sta fuori rimane fisso, come se fosse una cornice.*
 ---
 
 ## 12. Struttura dei File
