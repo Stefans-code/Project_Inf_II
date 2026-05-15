@@ -76,25 +76,38 @@ Il feedback all'utente è gestiro tramite messaggi di avviso(`alert`) che comuni
 
 ---
 
+## 7. La Homepage (`HomeView.vue`)
 
-## 7. Gestione dello Stato e Reattività (`GameView.vue`)
+Il componente `HomeView.vue` è la prima schermata che l'utente visualizza dopo aver effettuato l'accesso e ha il compito di indirizzarlo verso le diverse funzionalità del progetto.
 
-Utilizziamo la **Composition API** per gestire lo stato del gioco in modo granulare.
+Nella sezione `<script>` il componente utilizza il router di Vue per gestire il passaggio tra le varie "pagine". La logica della Home verifica che l'utente sia effettivamnete loggato(controllando il `localStorage` impostato nel login). Se l'utente è presente, la Home personalizza l'esperienza mostrando un messaggio di benvenuto con l'username recuperato dalla sessione
+
+Nella pagina ogni bottone del menu è collegato a una rotta definita nel file `router/index.js` come ad esempio `/game` o `/leaderboard`.
+
+---
+
+## 8. Gestione dello Stato e Reattività (`GameView.vue`)
+
+Il componente `GameView.vue` rappresenta il cuore interattivo dell'applicazione. Utilizziamo la **Composition API** per gestire lo stato del gioco in modo granulare.
 
 ### Variabili Reattive (`ref`):
-- `state`: Controlla il flusso dell'interfaccia (macchina a stati: `mode_selection` -> `quiz` -> `game_over`).
-- `currentFact` e `options`: Aggiornati asincronicamente dopo ogni chiamata API, scatenando il re-rendering automatico del DOM grazie al sistema di "Proxy" di Vue 3.
+- **la variabile reattiva `state`**: controlla il flusso dell'interfaccia (macchina a stati: `mode_selection` ->`difficulty_selection` -> `quiz` -> `game_over`). Questo approccio permette al template di mostrare sezioni diverse in  base alla fase del gioco
+- **le variabili `currentFact`(la domanda) e `options`(le risposte)**: aggiornate asincronicamente dopo ogni chiamata API, scatenando il re-rendering automatico del DOM grazie al sistema di "Proxy" di Vue 3. Il framework intercetta il cambiamento dei dati e aggiorna solo la parte di interfaccia necessaria, garantendo prestazioni elevate e un'interfaccia sempre sincronizzata
 
 ### Ciclo di Vita (Lifecycle Hooks):
 - **`onUnmounted`**: Cruciale per le performance. Quando l'utente cambia rotta (es. torna alla home), eseguiamo `clearInterval(timerInterval)`. Senza questo passaggio, il timer continuerebbe a girare in background, causando errori e spreco di risorse (memory leak).
 
 ### Algoritmo di Shuffle:
-Per mescolare le risposte usiamo: `options.value.sort(() => Math.random() - 0.5)`.
-- *Spiegazione Tecnica*: Il metodo `sort` si aspetta un valore positivo, negativo o zero. `Math.random() - 0.5` restituisce un numero casuale tra -0.5 e 0.5, forzando un ordinamento arbitrario dell'array.
+Per garantire che il quiz sia sempre diverso, le risposte vengono mescolate ad ogni round.
+- **Meccanica**: utilizziamo il metodo `options.value.sort(() => Math.random() - 0.5)`.
+- *Spiegazione Tecnica*: Il metodo `sort` si aspetta un valore positivo, negativo o zero per decidere l'ordine degli elementi. Sottraendo 0.5 al risultato di `Math.random()`(che genera un numero tra 0 e 1),  otteniamo un valore casuale che oscilla tra -0.5 e 0.5, forzando un ordinamento arbitrario e prevedibile dell'array delle risposte.
+
+### Integrazione cloud e record:
+Al termine della partita entra in gioco la funzione `updateHighScore`. Questa funzione recupera l'username dal `localStorage`, interroga Firestore per ottenere il record precedente e, solo se il punteggio attuale è superiore, procede all'aggiornamento del database con `updateDoc`. Viene anche salvata la data del record per mantenere uno storico preciso.
 
 ---
 
-## 8. Integrazione Backend e Cloud (`firebase.js` & Auth)
+## 9. Integrazione Backend e Cloud (`firebase.js` & Auth)
 
 ### Autenticazione Firestore:
 Invece di usare Firebase Auth standard (OAuth), abbiamo costruito un sistema di controllo diretto su Firestore:
@@ -107,7 +120,7 @@ Invece di usare Firebase Auth standard (OAuth), abbiamo costruito un sistema di 
 
 ---
 
-## 9. Design System: Material Design 3
+## 10. Design System: Material Design 3
 
 L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
@@ -118,7 +131,7 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
 ---
 
-## 10. Possibili Domande Tecniche Avanzate (DOMANDE D'ESAME)
+## 101. Possibili Domande Tecniche Avanzate (DOMANDE D'ESAME)
 
 **D: Come gestisci l'asincronia se l'utente clicca velocemente più pulsanti?**
 *R: Abbiamo implementato un "lock" logico. Nella funzione `checkAnswer`, controlliamo se `selectedOption.value` è già valorizzato. Se lo è, la funzione esce immediatamente (`return`), impedendo all'utente di rispondere due volte alla stessa domanda o di accumulare punti extra.*
@@ -134,7 +147,7 @@ L'interfaccia è stata costruita seguendo le linee guida **M3 (Material You)**.
 
 ---
 
-## 11. Struttura dei File
+## 12. Struttura dei File
 ```text
 /
 ├── script.js          # Business Logic (Wikipedia, Regex, Sanitization)
