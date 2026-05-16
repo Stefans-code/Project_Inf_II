@@ -3,33 +3,21 @@ import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <div id="app-wrapper">
-    <main>
-      <RouterView />
-    </main>
+  <v-app>
+    <v-main>
+      <v-container class="py-10" fluid>
+        <RouterView />
+      </v-container>
+    </v-main>
 
-    <footer>
-      <p class="footer-text">
+    <v-footer app color="transparent" class="justify-center pb-4" elevation="0">
+      <div class="footer-text">
         &copy; 2026 GeoQuiz Project - Corso Informatica II
-      </p>
-    </footer>
-  </div>
+      </div>
+    </v-footer>
+  </v-app>
 </template>
 
 <style>
-/* App-level layout */
-#app-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.footer-text {
-  text-align: center;
-  margin-top: 40px;
-  font-size: 0.875rem;
-  color: #37474f; /* Dark Slate for better contrast */
-  font-weight: 500;
-}
+/* Gli stili globali sono gestiti in style.css */
 </style>

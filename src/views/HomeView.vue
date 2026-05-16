@@ -1,56 +1,76 @@
 <script setup>
-import { onMounted } from 'vue'
+/**
+ * HOME VIEW - Il Menu Principale del Gioco
+ * In questa pagina l'utente può scegliere cosa fare (Giocare, Profilo, Classifica, Istruzioni).
+ */
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const username = localStorage.getItem('username')
+// Recuperiamo l'username salvato localmente per dare un benvenuto personalizzato
+const username = ref(localStorage.getItem('username') || "Guest")
 
-// Se non c'è un utente loggato, rimanda alla pagina di Login
-onMounted(() => {
-  if (localStorage.getItem('userLogged') !== 'true') {
-    router.push('/login')
-  }
-})
-
-/** 
- * LOGOUT: Pulisce la sessione locale (userLogged e username) e reindirizza al Login.
+/**
+ * Funzione di Logout: Pulisce il nome utente e torna al login.
+ * Utile per l'esame spiegare come 'localStorage' mantiene la sessione.
  */
 const handleLogout = () => {
-  localStorage.removeItem('userLogged')
   localStorage.removeItem('username')
   router.push('/login')
 }
 </script>
 
 <template>
-  <div class="view-container md-card">
-    <h1>GeoQuiz</h1>
-    <p>Welcome back, <strong>{{ username }}</strong>.</p>
+  <!-- 
+    v-card: Il contenitore principale in stile Material Design.
+    mx-auto: Centra la card orizzontalmente.
+    elevation: Aggiunge un'ombra per dare profondità.
+    max-width: Impedisce alla card di diventare troppo larga su PC.
+  -->
+  <v-card class="pa-8 text-center mx-auto" elevation="8" rounded="xl" width="100%" max-width="450">
+    <!-- Icona del Mondo per richiamare il tema del gioco -->
+    <v-icon icon="mdi-earth" size="x-large" color="primary" class="mb-2"></v-icon>
+    <h1 class="text-h4 font-weight-bold mb-2">GeoQuiz</h1>
+    <p class="mb-6">Welcome back, <strong class="text-primary">{{ username }}</strong>.</p>
     
-    <div class="menu-list">
-      <button @click="router.push('/game')" class="btn-filled">Play Now</button>
-      <button @click="router.push('/profile')" class="btn-tonal">My Profile</button>
-      <button @click="router.push('/leaderboard')" class="btn-tonal">Leaderboard</button>
-      <button @click="router.push('/about')" class="btn-outlined">Instructions</button>
-      <button @click="handleLogout" class="btn-outlined logout-btn">Logout</button>
-    </div>
-  </div>
+    <!-- 
+      v-row e v-col: Il sistema a griglia di Vuetify che rende il layout ADATTIVO.
+      cols="12": Su schermi piccoli occupa tutta la larghezza.
+    -->
+    <v-row dense>
+      <v-col cols="12">
+        <v-btn to="/game" color="primary" size="x-large" rounded="lg" block prepend-icon="mdi-play">
+          Play Now
+        </v-btn>
+      </v-col>
+      
+      <v-col cols="12" sm="6">
+        <v-btn to="/profile" variant="tonal" size="large" rounded="lg" block prepend-icon="mdi-account">
+          My Profile
+        </v-btn>
+      </v-col>
+      
+      <v-col cols="12" sm="6">
+        <v-btn to="/leaderboard" variant="tonal" size="large" rounded="lg" block prepend-icon="mdi-trophy">
+          Leaderboard
+        </v-btn>
+      </v-col>
+      
+      <v-col cols="12">
+        <v-btn to="/about" variant="outlined" size="large" rounded="lg" block prepend-icon="mdi-information">
+          Instructions
+        </v-btn>
+      </v-col>
+      
+      <v-col cols="12" class="mt-4">
+        <v-btn @click="handleLogout" variant="text" color="error" block prepend-icon="mdi-logout">
+          Logout
+        </v-btn>
+      </v-col>
+    </v-row>
+  </v-card>
 </template>
 
 <style scoped>
-.menu-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.logout-btn {
-  margin-top: 16px;
-  color: var(--md-sys-color-error);
-  border-color: var(--md-sys-color-error);
-}
-
-.logout-btn:hover {
-  background-color: rgba(179, 38, 30, 0.08);
-}
+/* Gli stili sono stati spostati in style.css per ordine e pulizia */
 </style>

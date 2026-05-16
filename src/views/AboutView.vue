@@ -1,99 +1,46 @@
 <script setup>
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-/** 
- * NAVIGAZIONE: Torna alla pagina principale (Menu).
+/**
+ * ABOUT VIEW - Istruzioni e Info
+ * Spiega all'utente come giocare. Mostra l'uso di v-list e icone.
  */
-const goHome = () => {
-  router.push('/')
-}
+import { useRouter } from 'vue-router'
+const router = useRouter()
+const goHome = () => router.push('/')
 </script>
 
 <template>
-  <div class="view-container md-card about-view">
-    <h1>About GeoQuiz</h1>
-    
-    <div class="info-content">
-      <p class="intro">GeoQuiz is an educational platform designed to challenge and expand your geographical knowledge through interactive trivia.</p>
-      
-      <h2>How to Play</h2>
-      <ul class="md-list">
-        <li>
-          <span class="icon">🎯</span>
-          <span>Select one of the 3 available game modes.</span>
-        </li>
-        <li>
-          <span class="icon">📖</span>
-          <span>Read the fact or curiosity sourced from Wikipedia.</span>
-        </li>
-        <li>
-          <span class="icon">🔍</span>
-          <span>Identify the correct country from the 4 options provided.</span>
-        </li>
-        <li>
-          <span class="icon">⭐</span>
-          <span>Reach the maximum score of 5 points to win!</span>
-        </li>
-      </ul>
-      
-      <p class="credits">Developed for the <strong>Informatic II</strong> course.</p>
+  <!-- mx-auto e max-width assicurano che la card sia centrata e leggibile su ogni schermo -->
+  <v-card class="pa-8 mx-auto" elevation="10" rounded="xl" width="100%" max-width="550">
+    <div class="text-center mb-4">
+      <v-icon icon="mdi-help-circle-outline" size="64" color="primary" class="mb-2"></v-icon>
+      <h1 class="text-h4 font-weight-bold">How to Play</h1>
     </div>
     
-    <button @click="goHome" class="btn-filled">Back to Menu</button>
-  </div>
+    <p class="text-body-1 mb-6 text-center">
+      GeoQuiz is an educational platform to challenge your geographical knowledge.
+    </p>
+    
+    <!-- 
+      v-list: Componente per elenchi ordinati.
+      bg-white-transparent: Classe definita in style.css per l'effetto vetro.
+    -->
+    <v-list class="text-left bg-transparent mb-6">
+      <v-list-item prepend-icon="mdi-target" title="Select one of the 3 available game modes." rounded="lg" class="mb-2 bg-white-transparent"></v-list-item>
+      <v-list-item prepend-icon="mdi-book-open-page-variant" title="Read the fact or curiosity sourced from Wikipedia." rounded="lg" class="mb-2 bg-white-transparent"></v-list-item>
+      <v-list-item prepend-icon="mdi-magnify" title="Identify the correct country from the 4 options provided." rounded="lg" class="mb-2 bg-white-transparent"></v-list-item>
+      <v-list-item prepend-icon="mdi-star" title="Reach the maximum score of 5 points to win!" rounded="lg" class="mb-2 bg-white-transparent"></v-list-item>
+    </v-list>
+    
+    <v-divider class="mb-4"></v-divider>
+    <div class="text-center">
+      <p class="text-caption text-medium-emphasis mb-6">Academic Project - Corso Informatica II</p>
+      <v-btn @click="goHome" color="primary" size="large" rounded="lg" block prepend-icon="mdi-arrow-left">
+        Back to Menu
+      </v-btn>
+    </div>
+  </v-card>
 </template>
 
 <style scoped>
-.about-view {
-  max-width: 550px;
-}
-
-.info-content {
-  text-align: left;
-  margin-bottom: 32px;
-}
-
-.intro {
-  font-size: 1.1rem;
-  margin-bottom: 24px;
-}
-
-h2 {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: var(--md-sys-color-primary);
-  margin-bottom: 16px;
-}
-
-.md-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 24px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.md-list li {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px;
-  background-color: var(--md-sys-color-surface);
-  border-radius: 12px;
-  border: 1px solid var(--md-sys-color-outline);
-}
-
-.md-list .icon {
-  font-size: 1.5rem;
-}
-
-.credits {
-  font-size: 0.875rem;
-  color: var(--md-sys-color-secondary);
-  border-top: 1px solid var(--md-sys-color-outline);
-  padding-top: 16px;
-  text-align: center;
-}
+/* CSS Spostato in style.css */
 </style>

@@ -1,5 +1,5 @@
 const ALL_COUNTRIES = [
-  "Italy", "France", "Germany", "Spain", "Japan", "Brazil", "Canada", "Australia", 
+  "Italy", "France", "Germany", "Spain", "Japan", "Brazil", "Canada", "Australia",
   "Argentina", "Egypt", "India", "China", "Mexico", "Norway", "Sweden", "Thailand",
   "Greece", "Portugal", "Netherlands", "Switzerland", "Austria", "Belgium", "Denmark",
   "Finland", "Poland", "Turkey", "Russia", "South Africa", "South Korea", "Vietnam",
@@ -8,8 +8,8 @@ const ALL_COUNTRIES = [
 
 // Lista ridotta per la modalità Europa. Nota: usiamo array separati per semplicità e velocità di accesso.
 const EUROPEAN_COUNTRIES = [
-  "Italy", "France", "Germany", "Spain", "Norway", "Sweden", "Greece", "Portugal", 
-  "Netherlands", "Switzerland", "Austria", "Belgium", "Denmark", "Finland", "Poland", 
+  "Italy", "France", "Germany", "Spain", "Norway", "Sweden", "Greece", "Portugal",
+  "Netherlands", "Switzerland", "Austria", "Belgium", "Denmark", "Finland", "Poland",
   "Ireland"
 ];
 
@@ -19,8 +19,8 @@ const EUROPEAN_COUNTRIES = [
  * @returns {Array} La lista dei nomi dei paesi.
  */
 export function getCountries(mode) {
-  if (mode === 2) return EUROPEAN_COUNTRIES; 
-  return ALL_COUNTRIES; 
+  if (mode === 2) return EUROPEAN_COUNTRIES;
+  return ALL_COUNTRIES;
 }
 
 /** 
@@ -30,7 +30,7 @@ export function getCountries(mode) {
  * @returns {Array} La lista di parole da oscurare.
  */
 export function getCountryBlacklist(/** @type string */ name) {
-    return [name, "italian", "italy", "france", "germany", "spain", "japan", "brazil", "republic", "kingdom", "state", "country"];
+  return [name, "italian", "italy", "france", "germany", "spain", "japan", "brazil", "republic", "kingdom", "state", "country"];
 }
 
 /** 
@@ -46,13 +46,13 @@ export async function getCountryInfo(/** @type string */ countryName, mode = 0) 
   }
 
   const response = await getData(searchQuery);
-  
+
   if (response.error != -1) {
     // Se la ricerca specifica fallisce, prova con quella base per non bloccare il gioco
     if (mode === 1) return getCountryInfo(countryName, 0);
     return "Errore nel caricamento del fatto da Wikipedia.";
   }
-  
+
   // Pulisce il testo e censura il nome del paese
   return sanitizeString(response.fact, getCountryBlacklist(countryName));
 }
@@ -124,9 +124,24 @@ export function censoreName(/** @type string*/ value, /** @type Array*/ names) {
   if (!value) return "";
   let censoredValue = value;
   for (let n of names) {
-    if (n.length < 3) continue; 
+    if (n.length < 3) continue;
     censoredValue = censoredValue.replace(new RegExp(n, "gi"), "***");
   }
   return censoredValue;
+}
+
+/** 
+ * ALGORITMO FISHER-YATES: Un metodo equo (unbiased) per mescolare un array.
+ * @param {Array} array - L'array da mescolare.
+ * @returns {Array} L'array mescolato.
+ */
+export function shuffleArray(array) {
+  let currentIndex = array.length;
+  while (currentIndex !== 0) {
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+  return array;
 }
 

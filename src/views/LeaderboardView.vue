@@ -1,4 +1,8 @@
 <script setup>
+/**
+ * LEADERBOARD VIEW - Classifica Globale
+ * Dimostra l'uso di query avanzate su Firestore (orderBy, limit) e la visualizzazione tabellare.
+ */
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { db } from '../firebase'
@@ -8,14 +12,15 @@ const router = useRouter()
 const highScores = ref([])
 const isLoading = ref(true)
 
+/**
+ * Recupero Top 10: Interroghiamo Firestore per ottenere i 10 punteggi più alti.
+ */
 onMounted(async () => {
   try {
-    // Recupera la classifica dalla cartella 'utenti', ordinando per highScore
     const q = query(collection(db, "utenti"), orderBy("highScore", "desc"), limit(10))
     const querySnapshot = await getDocs(q)
     const scores = []
     querySnapshot.forEach((doc) => {
-      // L'ID del documento è proprio l'username scelto dall'utente
       scores.push({ username: doc.id, ...doc.data() })
     })
     highScores.value = scores
@@ -26,88 +31,62 @@ onMounted(async () => {
   }
 })
 
-/** 
- * NAVIGAZIONE: Torna alla pagina principale (Menu).
- */
 const goHome = () => router.push('/')
 </script>
 
 <template>
-  <div class="view-container md-card leaderboard-view">
-    <h1>Global Leaderboard</h1>
-    
-    <div v-if="isLoading" class="loading-state">
-      <p>Fetching top explorers...</p>
+  <v-card class="pa-6 mx-auto" elevation="8" rounded="xl" width="100%" max-width="500">
+    <div class="text-center mb-6">
+      <v-icon icon="mdi-trophy-variant" size="48" color="amber-darken-2" class="mb-2"></v-icon>
+      <h1 class="text-h4 font-weight-bold">Leaderboard</h1>
+      <p class="text-medium-emphasis">Global top explorers</p>
     </div>
     
-    <div v-else class="table-container">
-      <table class="md-table">
+    <!-- v-card come contenitore della tabella per gestire lo scroll interno -->
+    <v-card variant="outlined" rounded="lg" class="mb-6" style="max-height: 400px; overflow-y: auto;">
+      <div v-if="isLoading" class="text-center py-10">
+        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+        <p class="mt-4 text-body-2 text-primary">Loading champions...</p>
+      </div>
+      
+      <!-- v-table: Componente Vuetify per tabelle pulite e reattive -->
+      <v-table v-else hover fixed-header>
         <thead>
           <tr>
-            <th>Rank</th>
-            <th>Player</th>
-            <th>Score</th>
+            <th class="text-left font-weight-bold">Rank</th>
+            <th class="text-left font-weight-bold">Player</th>
+            <th class="text-right font-weight-bold">Score</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(entry, index) in highScores" :key="entry.username">
-            <td class="rank-col">{{ index + 1 }}</td>
-            <td class="player-col">{{ entry.username }}</td>
-            <td class="score-col">{{ entry.highScore }}</td>
+            <td>
+              <v-avatar 
+                size="28" 
+                :color="index === 0 ? 'amber' : (index === 1 ? 'grey-lighten-1' : (index === 2 ? 'brown-lighten-1' : 'primary-container'))"
+                class="text-caption font-weight-black"
+              >
+                {{ index + 1 }}
+              </v-avatar>
+            </td>
+            <td>
+              <div class="d-flex align-center">
+                <v-icon icon="mdi-account" size="small" class="mr-2" color="medium-emphasis"></v-icon>
+                <span class="font-weight-medium">{{ entry.username }}</span>
+              </div>
+            </td>
+            <td class="text-right font-weight-bold text-primary">{{ entry.highScore }}</td>
           </tr>
         </tbody>
-      </table>
-    </div>
+      </v-table>
+    </v-card>
     
-    <button @click="goHome" class="btn-filled back-btn">Back to Menu</button>
-  </div>
+    <v-btn @click="goHome" color="primary" size="large" rounded="lg" block prepend-icon="mdi-arrow-left">
+      Back to Menu
+    </v-btn>
+  </v-card>
 </template>
 
 <style scoped>
-.leaderboard-view {
-  max-width: 500px;
-}
-
-.loading-state {
-  padding: 40px;
-  color: var(--md-sys-color-secondary);
-}
-
-.table-container {
-  margin: 24px 0 32px 0;
-  overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid var(--md-sys-color-outline);
-}
-
-.md-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.md-table th {
-  background-color: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-  padding: 12px 16px;
-  font-weight: 500;
-  font-size: 0.875rem;
-}
-
-.md-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--md-sys-color-outline);
-  background-color: var(--md-sys-color-surface);
-}
-
-.md-table tr:last-child td {
-  border-bottom: none;
-}
-
-.rank-col { font-weight: 700; width: 60px; color: var(--md-sys-color-primary); }
-.score-col { font-weight: 500; text-align: right; }
-
-.back-btn {
-  width: 100%;
-}
+/* CSS Spostato in style.css */
 </style>
