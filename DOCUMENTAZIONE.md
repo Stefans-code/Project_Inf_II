@@ -1,94 +1,74 @@
 # Relazione Tecnica Integrale: Progetto GeoQuiz
 **Manuale di Architettura, Sviluppo e Funzionamento Software**
-**Corso di Informatica ed Elementi di Programmazione II**
 
 ---
 
-## 1. Visione d'Insieme e Obiettivi Pedagogici
-GeoQuiz non è solo un videogioco, ma un ecosistema software progettato per dimostrare la padronanza delle tecnologie web moderne. Il progetto integra la reattività dei framework front-end (Vue.js), la potenza dei sistemi cloud (Firebase) e l'interoperabilità con servizi di terze parti (Wikipedia REST API). 
-
-### 1.1 Rispetto Rigoroso dei Requisiti d'Esame
-Ogni riga di codice è stata scritta per soddisfare i criteri del bando:
-*   **HTML5/JS/CSS**: Fondamenta solide su cui poggia il framework.
-*   **Vue.js 3 (Composition API)**: Utilizzato per la gestione granulare della reattività.
-*   **Vuetify 3**: Scelto per implementare il Material Design 3 e garantire la responsiveness senza scrivere migliaia di righe di CSS manuale (scelta consigliata dal corso).
-*   **Dati da API**: Wikipedia è la nostra fonte dinamica di conoscenza.
-*   **Database Cloud**: Firestore garantisce persistenza e scalabilità dei record.
-*   **Schermate**: 6 viste distinte e funzionali.
-*   **Accessibilità**: Contrasti cromatici elevati e componenti semantici.
+## 1. Architettura del Sistema
+Il progetto GeoQuiz è una **Single Page Application (SPA)** basata su **Vue.js 3** e **Vuetify 3**, con un backend serverless appoggiato su **Firebase Firestore**. 
 
 ---
 
-## 2. Analisi dei Moduli di Sistema (JavaScript)
+## 2. Analisi Dettagliata del Modulo "GameView.vue"
+In questa sezione analizziamo ogni singola funzione che governa la logica di gioco.
 
-### 2.1 `main.js`: Il Cervello Centrale
-Questo file è l'entry-point che orchestra l'avvio dell'applicazione.
-*   **Creazione Istanza**: Tramite `createApp(App)` inizializziamo il nodo radice.
-*   **Configurazione Vuetify**: È qui che definiamo le icone (`mdi`) e i set di componenti. Senza questo passaggio, i tag `v-app`, `v-card`, ecc., sarebbero ignorati dal browser.
-*   **Routing**: `app.use(router)` attiva il meccanismo che permette di cambiare pagina in meno di un secondo senza ricaricare il sito.
+### 2.1 Gestione del Tempo e Eventi Temporali
+*   **`startTimer()`**: 
+    - *Logica*: Utilizza `setInterval` per decrementare la variabile reattiva `timer` ogni 1000ms.
+    - *Controllo*: Include una clausola di salvaguardia: se `selectedOption.value` non è null (ovvero l'utente ha risposto), il timer si sospende logicamente. 
+    - *Sicurezza*: In caso di scadenza (timer = 0), invoca `handleTimeout()`.
+*   **`handleTimeout()`**: 
+    - *Scopo*: Gestisce l'assenza di risposta. 
+    - *Flusso*: Imposta la risposta come errata, incrementa il contatore dei round e, dopo 2 secondi di pausa per permettere all'utente di rendersene conto, passa al round successivo o alla fine del gioco.
 
-### 2.2 `firebase.js`: L'Infrastruttura Dati
-Gestisce la comunicazione criptata con i server di Google.
-*   **Firestore Initialization**: Esportiamo l'oggetto `db`. Questo oggetto è un'istanza del database NoSQL Firestore. A differenza di un database SQL (a tabelle), Firestore salva "Documenti" all'interno di "Collezioni" (JSON-like), rendendo l'accesso ai dati istantaneo.
+### 2.2 Configurazione Sessione
+*   **`selectMode(m)`**: 
+    - Riceve un intero (0, 1 o 2) che mappa la categoria (Mondo, Cibo, Europa). Aggiorna lo stato della macchina a stati portando l'utente alla scelta della difficoltà.
+*   **`selectDifficulty(d)`**: 
+    - Inizializza i contatori (`score = 0`, `answers = 0`) e pulisce l'array `alreadyUsedCountrys` per garantire che ogni partita sia fresca. Invoca quindi il primo round.
 
-### 2.3 `script.js`: Gli Algoritmi e le Utilità
-È il file "puro" dove risiede la logica matematica e di rete.
-*   **Gestione Paesi**: Contiene array costanti di nazioni. Questa scelta è preferibile a un database esterno per i nomi dei paesi per garantire che il gioco funzioni istantaneamente al caricamento.
-*   **`getCountryInfo` (Wikipedia API)**: 
-    - Esegue una chiamata `fetch` all'endpoint di Wikipedia.
-    - **Algoritmo di Censura (Regex)**: Utilizza l'espressione regolare `new RegExp(escapedCountry, 'gi')`. `g` sta per globale (sostituisce tutte le occorrenze) e `i` sta per case-insensitive (non fa differenza tra maiuscole e minuscole). Questo assicura che il quiz sia equo e che la risposta non sia svelata nell'indizio.
-*   **`shuffleArray` (Fisher-Yates)**: 
-    - È il metodo più efficiente per mescolare un array. 
-    - **Dettaglio tecnico**: Parte dalla fine dell'array, sceglie un indice casuale tra gli elementi rimanenti e scambia i valori. Questo garantisce una complessità temporale di O(n), rendendolo estremamente veloce anche su set di dati enormi.
+### 2.3 Il Game Loop (Round e Risposte)
+*   **`startNewRound()`**: 
+    - È una funzione **async** (asincrona). 
+    - *Wikipedia*: Attende la risposta delle API tramite `getCountryInfo`.
+    - *Opzioni*: Genera un array di 4 risposte univoche.
+    - *Shuffle*: Utilizza l'algoritmo Fisher-Yates per mescolare le risposte in modo che la posizione della corretta sia imprevedibile.
+*   **`checkAnswer(selected)`**: 
+    - Esegue il `clearInterval` immediato per bloccare il tempo.
+    - Implementa un "Lock Logico": se l'utente ha già cliccato, la funzione non fa nulla.
+    - Gestisce il feedback visivo impostando colori e icone in base alla correttezza.
+    - *Transizione*: Utilizza un `setTimeout` di 2000ms per creare una pausa narrativa tra una domanda e l'altra.
 
----
-
-## 3. Analisi Profonda dei Componenti (Viste Vue)
-
-### 3.1 `LoginView.vue`: Autenticazione e Persistenza
-*   **Stato Reattivo**: Le variabili `username` e `password` sono dichiarate come `ref('')`. Grazie a `v-model`, ogni carattere digitato dall'utente viene istantaneamente riflesso nella memoria di Vue.
-*   **Logica di Controllo**: `handleLogin` esegue una ricerca nel database. Se trova una corrispondenza, utilizza `localStorage.setItem('username', value)` per "ricordare" l'utente. Questo evita che l'utente debba rifare il login ogni volta che aggiorna la pagina (concetto di Session Persistence).
-
-### 3.2 `HomeView.vue`: Hub Dinamico
-*   **Personalizzazione**: All'attivazione della pagina, recuperiamo l'username dal storage locale. Se non è presente, il sistema è programmato per mostrare "Guest" o reindirizzare al login.
-*   **Interazione**: I pulsanti `v-btn` con la prop `to` (es. `to="/game"`) permettono una navigazione fluida e priva di lag, gestita dal sistema di routing interno.
-
-### 3.3 `GameView.vue`: Il Motore di Gioco (Game Engine)
-È il componente più denso di codice (oltre 400 righe) e gestisce la logica di stato.
-*   **Macchina a Stati (Finite State Machine)**: La variabile `state` controlla il template. Passiamo da `mode_selection` (scelta tema) a `difficulty_selection` (scelta difficoltà), poi a `quiz` e infine a `game_over`.
-*   **Gestione del Timer**: Utilizziamo l'hook `onUnmounted` per distruggere il timer quando l'utente lascia la pagina. Questo è un dettaglio tecnico fondamentale per evitare i **Memory Leak** (consumo inutile di memoria).
-*   **Game Loop**: Ogni round consuma una "domanda". Al termine dei 5 round previsti, la funzione `checkAnswer` interrompe il loop e attiva la schermata dei risultati.
-*   **Salvataggio Cloud**: `updateHighScore` non sovrascrive sempre il dato, ma esegue prima un controllo di confronto. Questo garantisce che il record sia effettivamente il "massimo punteggio" mai raggiunto.
-
-### 3.4 `LeaderboardView.vue`: Elaborazione Dati Server-Side
-*   **Query Firestore**: Utilizziamo le funzioni `query`, `orderBy` e `limit`. 
-*   **Spiegazione Tecnica**: Firestore crea degli "Indici" sui campi ordinati. Questo permette di ottenere la classifica in pochi millisecondi anche se avessimo migliaia di utenti registrati.
-*   **Visualizzazione**: La tabella è dinamica. Se un utente nuovo entra in classifica, questa si aggiorna automaticamente al caricamento successivo grazie alla query `getDocs`.
+### 2.4 Persistenza e Navigazione
+*   **`updateHighScore()`**: 
+    - Esegue un fetch da Firestore per leggere il record attuale.
+    - Effettua una comparazione: se `score attuale > highScore storico`, procede con `updateDoc`.
+*   **`goHome()`**: 
+    - Pulisce i timer attivi per evitare memory leak e utilizza `router.push('/')` per cambiare vista.
 
 ---
 
-## 4. Design e Responsiveness (Il Sistema Visivo)
+## 3. Analisi dei File JavaScript di Supporto
 
-### 4.1 `style.css`: Il Design System
-Abbiamo creato una separazione netta tra struttura (HTML) e stile (CSS).
-*   **Glassmorphism (Vetro Smerigliato)**: Implementato tramite `backdrop-filter: blur(16px)`. Questo comando dice alla GPU del computer di sfocare lo sfondo dietro l'elemento, creando profondità.
-*   **Gestione Sfondo**: Lo sfondo è applicato direttamente al tag `html` con `background-size: cover`. Questo assicura che la mappa del mondo sia sempre visibile, non importa quanto sia grande la finestra del browser.
-*   **Layout Adattivo**: Abbiamo configurato il contenitore principale per avere un padding dinamico. Su schermi piccoli, i margini si riducono automaticamente per lasciare spazio al contenuto del gioco.
+### 3.1 `script.js`: Logica Algoritmica
+*   **`getCountryInfo`**: Utilizza **Espressioni Regolari (Regex)** per cercare il nome del paese nel testo estratto da Wikipedia e sostituirlo con `***`.
+*   **`shuffleArray`**: Implementazione rigorosa dell'algoritmo di rimescolamento.
+
+### 3.2 `firebase.js`: Configurazione Cloud
+*   Inizializza la connessione con Google Firebase e esporta l'istanza `db` per permettere l'accesso ai dati a tutti i componenti Vue.
 
 ---
 
-## 5. Manuale per la Presentazione Orale (Domande d'Esame)
+## 4. Standard Tecnici e Responsiveness
+*   **Vuetify Grid System**: Utilizzo di `v-row` e `v-col` con breakpoint dinamici.
+*   **Glassmorphism**: Implementato via CSS in `style.css` tramite `backdrop-filter` per un'estetica moderna e leggibile.
+*   **Reattività**: Uso di `ref` per il data-binding bidirezionale (`v-model`).
 
-**D: Come hai garantito che il sito non si blocchi durante i caricamenti?**
-*R: Ho usato la programmazione asincrona (Async/Await). Quando l'app chiede dati a Wikipedia o Firebase, non blocca l'esecuzione del codice principale, permettendo all'utente di continuare a vedere le animazioni o il timer mentre i dati arrivano.*
+---
 
-**D: Cos'è Vuetify e perché è stato scelto rispetto al CSS manuale?**
-*R: Vuetify è un framework di componenti che segue il Material Design. È stato scelto perché garantisce coerenza visiva, componenti pronti e già testati per l'accessibilità e la responsiveness, permettendoci di focalizzarci sulla logica del gioco invece che sul debug del layout.*
-
-**D: Spiega l'importanza di `v-model` nel tuo progetto.**
-*R: `v-model` è la colonna portante dell'interattività in Vue. Permette la "sincronizzazione bidirezionale": se l'utente scrive nell'input, la variabile nel codice cambia; se il codice cambia la variabile, l'input si aggiorna da solo. Lo usiamo per il login e per la gestione della difficoltà.*
-
-**D: Come hai gestito la sicurezza del punteggio?**
-*R: Anche se è un front-end, la logica di confronto del record avviene nel momento del salvataggio. Usiamo le funzioni di Firebase per assicurarci che solo l'utente loggato possa scrivere nel proprio documento specifico.*
+## 5. Guida per la Discussione d'Esame (Domande Tecniche)
+1.  **Asincronia**: Spiegazione dell'uso di `async/await` per non bloccare il thread principale della UI.
+2.  **Ciclo di Vita**: L'importanza di `onUnmounted` per la gestione corretta delle risorse (timer).
+3.  **Data Binding**: Come `v-model` sincronizza input utente e stato interno.
+4.  **NoSQL**: Perché Firestore è scalabile e come differisce dai DB a tabelle.
 
 ---
