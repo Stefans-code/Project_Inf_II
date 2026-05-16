@@ -1,69 +1,70 @@
-# Relazione Tecnica Progetto GeoQuiz
-**Candidato: [Tuo Nome]**
-**Corso: Informatica ed Elementi di Programmazione II**
+# Relazione Tecnica Finale: Progetto GeoQuiz
+**Sviluppo di un'Applicazione Web Reattiva con Vue.js 3 e Vuetify**
 
 ---
 
-## 1. Conformità ai Requisiti del Progetto
-Il progetto è stato sviluppato seguendo rigorosamente le specifiche fornite per l'esame:
-
-*   **Tecnologie Core**: Sviluppato interamente in **HTML5, CSS3 e JavaScript** utilizzando il framework **VueJS 3**.
-*   **Framework UI**: Utilizzo di **Vuetify 3** per garantire Material Design, componenti professionali e accessibilità.
-*   **Responsiveness**: Il layout è adattivo al 100% (Mobile/Tablet/Desktop) grazie al sistema a griglia di Vuetify e media queries personalizzate.
-*   **Uso di API**: Integrazione con le **Wikipedia REST API** per il recupero dinamico di fatti e curiosità geografiche.
-*   **Uso di Database**: Integrazione con **Firebase Firestore** per la persistenza dei dati (lettura e scrittura).
-*   **Schermate**: Il progetto dispone di **6 schermate dinamiche** (superando il minimo di 5 richiesto).
-*   **Interazioni**: Implementazione diffusa di `v-model` (per gli input) e `@click` (per la logica di gioco e navigazione).
+## 1. Architettura del Sistema
+L'applicazione GeoQuiz è basata su un'architettura **Single Page Application (SPA)** sviluppata con **Vue.js 3**. Utilizza la **Composition API** per garantire la massima modularità e riutilizzabilità del codice. La comunicazione con il backend è asincrona e si appoggia a **Firebase Firestore** per la persistenza dei dati e alle **Wikipedia REST API** per il reperimento dinamico dei contenuti.
 
 ---
 
-## 2. Analisi Dettagliata delle Pagine e Funzioni
+## 2. Analisi Dettagliata dei Moduli (Viste)
 
-### 2.1 Login e Registrazione (LoginView.vue)
-Questa è la porta d'accesso al sistema. Gestisce l'identità dell'utente.
-*   **`v-model="username"`**: Lega l'input dell'utente alla variabile JavaScript in tempo reale.
-*   **`handleLogin()`**: Verifica asincronamente su Firebase se l'utente esiste. In caso positivo, salva la sessione in `localStorage`.
-*   **`handleRegister()`**: Scrive un nuovo documento nel database Firestore inizializzando il punteggio a zero.
+### 2.1 Modulo di Autenticazione (`LoginView.vue`)
+Il modulo gestisce l'accesso e la registrazione degli utenti tramite un sistema di identificazione univoco.
+*   **Gestione dello Stato**: Utilizza variabili reattive (`ref`) collegate tramite **v-model** ai campi di input per catturare le credenziali in tempo reale.
+*   **Funzione `handleLogin`**: Esegue una chiamata asincrona a Firestore tramite `getDoc`. Se il documento esiste, inizializza la sessione utente salvando l'identificativo nel `localStorage`.
+*   **Funzione `handleRegister`**: Utilizza il metodo `setDoc` di Firebase per creare un nuovo record utente, garantendo l'integrità dei dati iniziali (punteggio settato a zero).
+*   **Componenti UI**: Utilizza `v-text-field` con proprietà `variant="outlined"` e icone semantiche per migliorare la UX.
 
-### 2.2 Menu Principale (HomeView.vue)
-Hub centrale per la navigazione fluida tra le sezioni.
-*   **`username` (ref)**: Recupera il nome salvato nel browser per personalizzare l'interfaccia.
-*   **`handleLogout()`**: Esegue la pulizia della sessione (rimozione dati locali) e reindirizza l'utente al login.
+### 2.2 Dashboard Utente (`HomeView.vue`)
+Funge da router centrale e punto di ingresso alle funzionalità di gioco.
+*   **Logica di Sessione**: Recupera l'username dal `localStorage` per personalizzare l'esperienza. Implementa un meccanismo di protezione per cui, se l'utente non è loggato, viene reindirizzato alla pagina di accesso.
+*   **Funzione `handleLogout`**: Esegue il `removeItem` dal storage locale e resetta lo stato del router, garantendo una chiusura sicura della sessione.
+*   **Responsiveness**: Organizzata tramite `v-row` e `v-col` con gestione dei breakpoint (`sm`, `md`) per adattare i bottoni di navigazione a schermi di diverse dimensioni.
 
-### 2.3 Schermata di Gioco (GameView.vue)
-Il modulo più complesso, contenente la logica di business e il game loop.
-*   **`selectMode(m)`**: Imposta la categoria di gioco (Mondo, Cibo, Europa).
-*   **`selectDifficulty(d)`**: Inizializza i parametri di difficoltà e resetta il punteggio della sessione.
-*   **`startNewRound()`**: La funzione core che estrae un paese (evitando duplicati), interroga Wikipedia e genera 4 opzioni di risposta.
-*   **`startTimer()` / `handleTimeout()`**: Gestiscono il countdown di 15 secondi tramite `setInterval`. In caso di scadenza, la domanda è persa.
-*   **`checkAnswer(selected)`**: Valida la risposta dell'utente, aggiorna il punteggio e gestisce il feedback visivo (colorazione bottoni).
-*   **`updateHighScore()`**: Confronta il punteggio attuale con quello salvato su Firebase e, se superiore, esegue una scrittura (`updateDoc`) per aggiornare il record.
+### 2.3 Motore di Gioco (`GameView.vue`)
+È il modulo più denso di logica applicativa, che gestisce il ciclo di vita di una partita.
+*   **Macchina a Stati**: Gestita tramite la variabile reattiva `state` che alterna i template tra selezione modalità, selezione difficoltà, fase quiz e game over tramite il componente `v-window`.
+*   **Funzione `startTimer`**: Implementa un countdown di 15 secondi tramite `setInterval`. Gestisce correttamente la pulizia della memoria richiamando `clearInterval` nell'hook `onUnmounted`.
+*   **Algoritmo `startNewRound`**:
+    1.  Estrae un paese casuale dalla libreria `script.js`.
+    2.  Verifica che non sia già stato usato nella sessione corrente per evitare ripetizioni.
+    3.  Invia una richiesta asincrona alle API di Wikipedia per ottenere la curiosità associata.
+    4.  Genera 4 opzioni di risposta e le mescola tramite l'algoritmo **Fisher-Yates**.
+*   **Funzione `checkAnswer`**: Valida l'input dell'utente confrontandolo con il target. Implementa un feedback visivo istantaneo tramite le classi dinamiche di Vuetify (`color="success"` o `color="error"`).
+*   **Integrazione Cloud (`updateHighScore`)**: Se il punteggio finale è superiore al record precedente salvato su Firebase, esegue un `updateDoc` atomico per aggiornare le statistiche globali dell'utente.
 
-### 2.4 Classifica Globale (LeaderboardView.vue)
-Visualizzazione dei dati aggregati.
-*   **`onMounted()`**: Esegue una query complessa su Firestore ordinando i documenti per `highScore` decrescente e limitando il risultato ai primi 10.
-*   **`v-table`**: Visualizza i campioni con icone distintive per il podio.
+### 2.4 Classifica Globale (`LeaderboardView.vue`)
+Visualizza i dati aggregati del database in tempo reale.
+*   **Query Firestore**: All'attivazione (`onMounted`), esegue una query ordinata decrescente (`orderBy`) limitata ai primi 10 risultati (`limit`).
+*   **Componente `v-table`**: Sfrutta le proprietà `fixed-header` e `hover` per una visualizzazione dei dati professionale e leggibile.
+*   **Gestione Caricamento**: Utilizza `v-progress-circular` per gestire lo stato di attesa (loading) durante il fetch asincrono dei dati dal server.
 
-### 2.5 Profilo Utente (ProfileView.vue)
-Mostra i dati specifici dell'utente loggato.
-*   **Lettura DB**: All'apertura della pagina, legge il record personale dell'utente direttamente dal suo documento Firebase.
-*   **Visualizzazione**: Usa componenti `v-avatar` e tipografia avanzata per mostrare le statistiche.
+### 2.5 Profilo Utente (`ProfileView.vue`)
+Modulo dedicato alla visualizzazione delle statistiche personali.
+*   **Integrazione Dati**: Interroga il documento specifico dell'utente su Firestore per recuperare il valore `highScore`.
+*   **Visualizzazione**: Utilizza `v-avatar` per la componente estetica e `v-divider` per separare logicamente le informazioni.
 
-### 2.6 Informazioni (AboutView.vue)
-Guida all'uso e dettagli del progetto.
-*   **Accessibilità**: Utilizza icone semantiche e una lista strutturata per spiegare le regole del gioco.
+### 2.6 Informazioni e Istruzioni (`AboutView.vue`)
+Modulo statico-dinamico per il supporto all'utente.
+*   **Struttura**: Utilizza `v-list` e `v-list-item` per presentare le regole del gioco in modo strutturato e accessibile.
 
 ---
 
-## 3. Logica Algoritmica e Sicurezza
-*   **Fisher-Yates Shuffle**: Implementato per garantire la casualità assoluta delle risposte, requisito fondamentale per un quiz equo.
-*   **Sanitizzazione Wikipedia**: Utilizzo di Espressioni Regolari (Regex) per censurare il nome del paese all'interno del testo (evitando che la risposta sia svelata nell'indizio) e per rimuovere tag HTML superflui.
-*   **Protezione Interazioni**: Uso di variabili di stato per impedire all'utente di cliccare più volte la stessa risposta o di rispondere dopo la scadenza del tempo.
+## 3. Standard Tecnici e Requisiti Soddisfatti
+*   **Reattività Avanzata**: Utilizzo sistematico di `ref` e `computed` per garantire un'interfaccia sempre sincronizzata con lo stato dei dati.
+*   **Responsiveness**: Implementata tramite il sistema a griglia di Vuetify e stili CSS personalizzati (Glassmorphism) con `backdrop-filter: blur()`.
+*   **Gestione API**: Le chiamate a Wikipedia sono isolate in un file di logica esterno (`script.js`) per favorire la manutenibilità.
+*   **Persistenza NoSQL**: Utilizzo di Firebase Firestore con gestione degli accessi tramite documenti univoci.
 
 ---
 
-## 4. Design System e Accessibilità
-*   **Glassmorphism**: Lo stile visivo si basa su card semi-trasparenti con sfocatura dello sfondo (`backdrop-filter`), garantendo un'estetica moderna senza sacrificare la leggibilità del testo (colore blu scuro ad alto contrasto).
-*   **Layout Adattivo**: Ogni componente Vuetify è configurato per essere fluido. Le card si ridimensionano automaticamente e i menu si trasformano per una navigazione ottimale su schermi touch.
+## 4. Glossario Tecnico per l'Esame
+*   **Fisher-Yates**: Algoritmo per la generazione di permutazioni casuali, usato per mescolare le risposte.
+*   **Single Page Application (SPA)**: Applicazione web che carica un'unica pagina HTML e aggiorna il contenuto dinamicamente tramite JavaScript.
+*   **v-model**: Direttiva Vue per il data-binding bidirezionale tra input e stato.
+*   **Reattività**: Capacità del framework di aggiornare il DOM in risposta al cambiamento dei dati sottostanti.
+*   **Breakpoint**: Punti di interruzione CSS che definiscono come il layout cambia in base alla larghezza dello schermo.
 
 ---
