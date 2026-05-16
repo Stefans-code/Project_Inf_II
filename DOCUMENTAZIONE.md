@@ -1,64 +1,90 @@
-# Relazione Tecnica Finale: Progetto GeoQuiz
-**Sviluppo di un'Applicazione Web Reattiva con Vue.js 3 e Vuetify**
+# GeoQuiz: Relazione Tecnica Integrale e Analisi del Software
+**Progetto d'Esame - Informatica ed Elementi di Programmazione II**
 
 ---
 
-## 1. Architettura del Sistema
-L'applicazione GeoQuiz è basata su un'architettura **Single Page Application (SPA)** sviluppata con **Vue.js 3**. Utilizza la **Composition API** per garantire la massima modularità e riutilizzabilità del codice. La comunicazione con il backend è asincrona e si appoggia a **Firebase Firestore** per la persistenza dei dati e alle **Wikipedia REST API** per il reperimento dinamico dei contenuti.
+## 1. Analisi dell'Architettura e dei Requisiti
+Il progetto è stato concepito come una **Single Page Application (SPA)** moderna, focalizzata sulla reattività e sull'integrazione fluida tra dati cloud e interfacce dinamiche.
+
+### 1.1 Rispetto delle Specifiche
+Tutti i requisiti minimi e opzionali richiesti per il corso sono stati implementati:
+*   **Front-end**: Sviluppato con standard HTML5, CSS3 e JavaScript (ES6+).
+*   **Framework**: Utilizzo di **Vue.js 3** con la **Composition API**. Questa scelta permette una gestione dello stato più pulita rispetto alla Options API, separando logicamente i dati dalle funzioni.
+*   **Framework UI**: Integrazione di **Vuetify 3**. Abbiamo sfruttato il sistema di componenti "pre-styled" per garantire accessibilità e coerenza visiva.
+*   **Dati dal Server**: Utilizzo delle **REST API di Wikipedia**. Le chiamate sono gestite tramite il protocollo `fetch`, permettendo il caricamento asincrono dei contenuti senza ricaricare la pagina.
+*   **Responsiveness**: Il sito è "mobile-first". Grazie alla griglia di Vuetify (V-Grid), il layout si riorganizza dinamicamente passando da una visualizzazione a più colonne su PC a una singola colonna su smartphone.
+*   **Database (Cloud)**: Utilizzo di **Firebase Firestore**. È stato implementato un sistema di lettura (per la classifica e il record personale) e scrittura (per la registrazione e l'aggiornamento dei punteggi).
 
 ---
 
-## 2. Analisi dei Moduli Logici (File JavaScript)
+## 2. Analisi dei File di Logica (JavaScript)
 
-### 2.1 Inizializzazione (`main.js`)
-È il punto di ingresso (Entry Point) dell'intera applicazione.
-*   **Mounting**: Crea l'istanza dell'app Vue e la "monta" sul tag `#app` del file HTML principale.
-*   **Integrazione Framework**: Qui vengono importati e configurati **Vuetify** (per l'interfaccia) e il **Router** (per la navigazione).
-*   **Iconset**: Configura il set di icone *Material Design Icons (MDI)*, essenziale per la visualizzazione dei simboli in tutta l'app.
+### 2.1 `main.js`: Il Motore d'Avvio
+Questo file rappresenta l'Entry Point dell'applicazione. La sua funzione principale è creare l'istanza globale di Vue.
+*   **Inizializzazione**: Importa il componente radice `App.vue` e lo collega al DOM (Document Object Model).
+*   **Middleware**: "Inietta" nel sistema il **Vue Router** per la navigazione e **Vuetify** per lo stile. Senza questa configurazione, i componenti specifici nelle viste non verrebbero riconosciuti dal browser.
+*   **Asset**: Carica i font delle icone Material Design per garantire che tutti i simboli grafici siano renderizzati correttamente.
 
-### 2.2 Servizi Cloud (`firebase.js`)
-Gestisce la connessione con i servizi backend di Google.
-*   **Configurazione**: Contiene le chiavi API e le impostazioni del progetto Firebase.
-*   **Inizializzazione Firestore**: Esporta l'oggetto `db`, che permette a tutte le pagine del sito di leggere e scrivere dati nel database NoSQL in modo centralizzato.
+### 2.2 `firebase.js`: Il Ponte verso il Cloud
+Configura la comunicazione con i server di Google.
+*   **Sicurezza e Connessione**: Contiene l'oggetto di configurazione (chiavi API, ID progetto) necessario per autenticare l'app presso i server Firebase.
+*   **Oggetto `db`**: Inizializza Firestore e lo esporta. Questo permette di avere un unico punto di connessione al database, ottimizzando le prestazioni e rendendo il codice più facile da mantenere.
 
-### 2.3 Logica di Business (`script.js`)
-Contiene le funzioni core di utilità che non dipendono direttamente dall'interfaccia.
-*   **`getCountries(mode)`**: Restituisce la lista dei paesi in base alla modalità scelta (Mondo o Europa).
+### 2.3 `script.js`: La Logica di Business
+In questo file risiedono le funzioni "pure" che gestiscono i dati del gioco indipendentemente dall'interfaccia grafica.
+*   **`getCountries(mode)`**: Una struttura dati (array) che mappa i paesi disponibili. Divide logicamente le nazioni per area geografica o tematica.
 *   **`getCountryInfo(country, mode)`**: 
-    - Esegue il fetch verso l'API di Wikipedia.
-    - Implementa una **Regex (Espressione Regolare)** avanzata per pulire il testo e censurare il nome del paese, garantendo che l'indizio non contenga la soluzione.
-*   **`shuffleArray(array)`**: Implementazione dell'algoritmo **Fisher-Yates**. È una funzione "pura" che prende un array e ne restituisce una versione mescolata in modo imparziale.
+    - Gestisce la chiamata HTTP a Wikipedia.
+    - Implementa una logica di **Sanitizzazione del Testo**: usa una combinazione di `.replace()` e **Regex (Espressioni Regolari)** per trovare il nome del paese nel testo e censurarlo con `***`. Questo è fondamentale per non svelare la risposta nell'indizio.
+*   **`shuffleArray(array)`**: Implementazione dell'algoritmo di **Fisher-Yates**. A differenza di metodi più semplici, questo algoritmo garantisce una distribuzione statistica perfetta, rimescolando gli elementi in modo che ogni combinazione sia equiprobabile.
 
 ---
 
-## 3. Analisi Dettagliata delle Viste (Componenti Vue)
+## 3. Analisi Approfondita delle Viste (Componenti Vue)
 
-### 3.1 Modulo di Autenticazione (`LoginView.vue`)
-*   **Logica**: Usa `v-model` per il binding dei dati e `handleLogin`/`handleRegister` per l'interazione con Firestore.
-*   **Sicurezza**: Verifica l'esistenza dei documenti sul DB prima di procedere.
+### 3.1 `LoginView.vue`: Gestione Identità
+Questa pagina non è solo un form, ma il modulo che gestisce lo stato di autenticazione locale.
+*   **Binding Bidirezionale**: Utilizza la direttiva `v-model` per sincronizzare istantaneamente quello che l'utente scrive con lo stato interno di Vue.
+*   **Persistenza Locale**: Una volta che Firestore conferma l'esistenza dell'utente, viene utilizzato il `localStorage` del browser. Questo permette all'utente di rimanere loggato anche se chiude la scheda del browser, un concetto chiave della moderna UX web.
 
-### 3.2 Motore di Gioco (`GameView.vue`)
-*   **Ciclo di Vita**: Gestisce il timer con `setInterval` e la pulizia della memoria con `onUnmounted`.
-*   **Interazione**: Utilizza `v-window` per gestire le transizioni tra le fasi di gioco (selezione, quiz, risultati).
-*   **Persistence**: Registra il record dell'utente su Firebase tramite `updateHighScore`.
+### 3.2 `HomeView.vue`: Navigazione Adattiva
+Gestisce l'indirizzamento dell'utente verso le varie sezioni.
+*   **Routing**: Utilizza il componente `v-btn` con la prop `to`, che si integra con Vue Router per cambiare la vista senza ricaricare la pagina, mantenendo lo stato dell'app fluido.
+*   **Gestione Sessione**: Controlla la presenza dell'username e fornisce la funzione di `handleLogout` per ripulire i dati di sessione.
 
-### 3.3 Dashboard e Classifica (`HomeView.vue` / `LeaderboardView.vue`)
-*   **Home**: Gestisce la sessione tramite `localStorage`.
-*   **Leaderboard**: Utilizza query Firestore ordinate (`orderBy`, `limit`) per mostrare i top player mondiali.
+### 3.3 `GameView.vue`: Il Game Loop e la Macchina a Stati
+È il file più complesso. Gestisce un flusso di gioco diviso in fasi.
+*   **Stato Reattivo**: Utilizza una variabile `state` per decidere quale parte del template visualizzare (Selezione, Quiz, o Risultati). Questo evita di avere pagine separate, rendendo tutto più veloce.
+*   **Gestione del Tempo (Timer)**: Utilizza `setInterval` per il countdown. È programmato per fermarsi se l'utente risponde o se la pagina viene chiusa (`onUnmounted`), prevenendo sprechi di risorse computazionali.
+*   **Logica del Quiz**: Dopo ogni risposta, la funzione `checkAnswer` blocca ulteriori input, mostra il feedback (success/error) e attende 2 secondi prima di passare al round successivo, dando all'utente il tempo di capire se ha indovinato.
+
+### 3.4 `LeaderboardView.vue`: Gestione dei Dati Aggregati
+Dimostra la capacità di gestire set di dati provenienti dal server.
+*   **Query Ottimizzate**: Non scarica tutti gli utenti, ma chiede a Firestore solo i primi 10 (`limit`) ordinati per punteggio (`orderBy`). Questo riduce il traffico dati e velocizza il caricamento.
+*   **Visualizzazione Dinamica**: Usa `v-for` per generare le righe della tabella partendo dall'array di dati ricevuto, dimostrando la potenza del rendering dichiarativo di Vue.
 
 ---
 
-## 4. Requisiti Tecnici e Standard
-*   **Responsiveness**: Ottenuta tramite il sistema a griglia di Vuetify e media queries in `style.css`.
-*   **Separation of Concerns**: Logica (JS), Stile (CSS) e Interfaccia (Vue) sono mantenuti in file separati per una migliore manutenibilità.
-*   **Accessibilità**: Utilizzo di tag semantici e icone ARIA-compliant.
+## 4. Design System e Stile Unificato (`style.css`)
+Abbiamo creato un'estetica coerente e professionale separando completamente lo stile.
+*   **Glassmorphism**: Tecnica che simula il vetro smerigliato. Ottenuta con `backdrop-filter: blur(16px)` e `background-color: rgba(...)`. Questo garantisce contrasto e leggibilità sopra la mappa del mondo.
+*   **Adaptive Container**: Il contenitore principale (`.v-container`) calcola l'altezza disponibile (`min-height: calc(100vh - 120px)`) per assicurarsi che il footer non copra mai i pulsanti di gioco.
+*   **Global Overrides**: Abbiamo forzato la trasparenza di Vuetify (`background: transparent !important`) per permettere allo sfondo personalizzato di essere visibile in tutta l'applicazione.
 
 ---
 
-## 5. Glossario per l'Esame
-*   **Fisher-Yates**: Algoritmo per rimescolare array in modo equo.
-*   **Reattività**: Sistema di Vue che aggiorna il DOM quando cambiano i dati.
-*   **NoSQL**: Database non relazionale (come Firestore) che salva dati in formato simile a JSON.
-*   **Entry Point**: Il file principale da cui parte l'esecuzione (main.js).
+## 5. Domande Tecniche Avanzate per l'Esame
+
+**1. Come viene gestita l'asincronia nel progetto?**
+Usiamo il pattern `async/await`. Quando chiediamo dati a Wikipedia o Firebase, il codice "attende" la risposta senza bloccare il resto del browser. Questo garantisce che l'interfaccia non si "congeli" durante i caricamenti.
+
+**2. Cos'è la Composition API e perché è meglio della Options API?**
+La Composition API permette di raggruppare il codice per "funzionalità" invece che per "tipo di dato". È più simile alla programmazione JavaScript standard e rende il codice molto più facile da testare e riutilizzare.
+
+**3. Come garantite l'accessibilità (Accessibility)?**
+Usiamo i componenti Vuetify che seguono le specifiche WAI-ARIA. Inoltre, abbiamo scelto una palette di colori ad alto contrasto (blu scuro su bianco/vetro) per assicurarci che anche persone con difficoltà visive possano leggere il testo.
+
+**4. Perché avete implementato Fisher-Yates invece di un semplice sort casuale?**
+Il metodo `array.sort(() => Math.random() - 0.5)` non è veramente casuale (ha dei bias). Fisher-Yates è lo standard informatico per il rimescolamento equo (unbiased shuffle), dimostrando un approccio più rigoroso all'algoritmica.
 
 ---
