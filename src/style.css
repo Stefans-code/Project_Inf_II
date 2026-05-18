@@ -60,6 +60,24 @@ html {
 .bg-white-transparent {
   background-color: rgba(255, 255, 255, 0.3) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #1a237e !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+/* Hover effect per micro-animazione e dinamicità premium */
+.bg-white-transparent:hover {
+  background-color: rgba(255, 255, 255, 0.65) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 35, 126, 0.1) !important;
+}
+
+/* Massima leggibilità per testi e icone */
+.bg-white-transparent .v-list-item-title,
+.bg-white-transparent .v-list-item__title,
+.bg-white-transparent .v-list-item__prepend .v-icon,
+.bg-white-transparent .v-icon {
+  color: #1a237e !important;
+  opacity: 1 !important;
 }
 
 .footer-text {
@@ -79,4 +97,100 @@ html {
 .v-card::-webkit-scrollbar-thumb {
   background: rgba(26, 35, 126, 0.2);
   border-radius: 10px;
+}
+
+/* --- 5. LEGGIBILITÀ DEI COMPONENTI (Fissato contrasto pulsanti, input, tabelle e timer) --- */
+
+/* Garantiamo che i pulsanti outlined, tonal e text dentro la card abbiano testo e icone blu scuro leggibili */
+.v-card .v-btn--variant-tonal,
+.v-card .v-btn--variant-outlined,
+.v-card .v-btn--variant-text {
+  color: #1a237e !important;
+  border-color: rgba(26, 35, 126, 0.4) !important;
+  opacity: 1 !important;
+}
+
+/* Sfondo leggermente colorato per i pulsanti tonal in modo che abbiano un contrasto morbido e premium */
+.v-card .v-btn--variant-tonal {
+  background-color: rgba(26, 35, 126, 0.08) !important;
+}
+
+/* Massimo contrasto e leggibilità per i campi di input (label, testo, icone, bordi) */
+.v-card .v-text-field .v-field,
+.v-card .v-text-field .v-field__outline,
+.v-card .v-text-field .v-field-label,
+.v-card .v-text-field .v-field__input,
+.v-card .v-text-field input,
+.v-card .v-text-field .v-icon {
+  color: #1a237e !important;
+  border-color: rgba(26, 35, 126, 0.5) !important;
+  --v-theme-on-surface: 26, 35, 126 !important;
+}
+
+/* Assicura che le icone dei campi di testo (come prepend-inner-icon) siano blu scuro */
+.v-card .v-field__prepend-inner .v-icon,
+.v-card .v-field__clearable .v-icon {
+  color: #1a237e !important;
+  opacity: 1 !important;
+}
+
+/* Corregge il colore del testo inserito dall'utente nei campi di input */
+.v-card .v-field__input input {
+  color: #1a237e !important;
+}
+
+/* --- 6. AGGIUNTE SPECIFICHE PER TABELLE CLASSIFICA E SCHERMATE DI GIOCO --- */
+
+/* Correzioni per la tabella della Classifica (Leaderboard) */
+.v-card .v-table {
+  background: transparent !important;
+}
+
+/* Forza l'intestazione della tabella (thead) ad avere uno sfondo azzurro chiaro coerente invece del nero */
+.v-card .v-table thead tr {
+  background-color: rgba(26, 35, 126, 0.06) !important;
+}
+
+/* Testo dell'intestazione blu scuro e bordo coordinato */
+.v-card .v-table thead th {
+  color: #1a237e !important;
+  font-weight: 800 !important;
+  border-bottom: 2px solid rgba(26, 35, 126, 0.1) !important;
+}
+
+/* Righe e celle (td) coordinate con testo blu scuro visibile */
+.v-card .v-table td,
+.v-card .v-table td span,
+.v-card .v-table td div,
+.v-card .v-table td .v-icon {
+  color: #1a237e !important;
+  opacity: 1 !important;
+  border-bottom: 1px solid rgba(26, 35, 126, 0.08) !important;
+}
+
+/* Correzione scritte secondarie, didascalie e timer (Time Left) */
+.v-card .text-caption,
+.v-card .text-medium-emphasis,
+.v-card .header-info,
+.v-card .header-info div,
+.v-card .header-info span {
+  color: #1a237e !important;
+  opacity: 1 !important;
+}
+
+/* Correzione per i pulsanti elevati del quiz (le 4 opzioni di risposta) */
+/* Quando non sono ancora selezionati (senza successo/errore), li rendiamo dei meravigliosi vetri coordinati ad alto contrasto */
+.v-card .v-btn--variant-elevated:not(.bg-success):not(.bg-error) {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  color: #1a237e !important;
+  border: 1px solid rgba(26, 35, 126, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+/* Micro-animazione premium al passaggio del mouse sulle opzioni */
+.v-card .v-btn--variant-elevated:not(.bg-success):not(.bg-error):hover {
+  background-color: rgba(26, 35, 126, 0.08) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 35, 126, 0.12) !important;
 }
