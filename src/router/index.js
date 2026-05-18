@@ -18,4 +18,17 @@ const router = createRouter({
   ]
 })
 
+// Navigation Guard: Forza l'autenticazione. Se non loggato, reindirizza a /login.
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('username')
+  
+  if (to.name !== 'login' && !isAuthenticated) {
+    next({ name: 'login' })
+  } else if (to.name === 'login' && isAuthenticated) {
+    next({ name: 'home' })
+  } else {
+    next()
+  }
+})
+
 export default router
